@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "surrealdb_orm",
+    "surrealdb_orm_derive",
+]
