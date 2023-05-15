@@ -35,7 +35,7 @@ fn get_table_name(input: &DeriveInput) -> Option<String> {
                 match meta {
                     Meta::NameValue(nv) if nv.path.is_ident("name") => {
                         match nv.value {
-
+                            
                             _ => { return None; }
                         }
                     }

@@ -1,1 +1,14 @@
+# IDE
+.fleet
+.idea
+.vs_code
+
+# OS
+.DS_Storediesel-rs/diesel
+
+# Rust
 /target
+Cargo.lock
+
+# Extra
+.env
