@@ -3,6 +3,13 @@ name = "surrealdb_orm_derive"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+proc-macro = true
 
 [dependencies]
+quote = "1.0.26"
+surrealdb = "1.0.0-beta.9"
+syn = "2.0.15"
+
+[dev-dependencies]
+surrealdb_orm = { path = "../surrealdb_orm" }
