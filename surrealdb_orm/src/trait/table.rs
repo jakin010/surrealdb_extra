@@ -15,6 +15,8 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 
     fn set_id(&mut self, id: ::surrealdb::sql::Thing);
 
+    fn fields() -> Vec<&'static str>;
+
     async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Self, Error> {
         let s: Self = db.create(Self::table_name()).content(self).await?;
 
