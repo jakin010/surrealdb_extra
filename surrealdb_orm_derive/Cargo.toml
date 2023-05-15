@@ -9,7 +9,7 @@ proc-macro = true
 [dependencies]
 quote = "1.0.26"
 surrealdb = "1.0.0-beta.9"
-syn = "2.0.15"
+syn = { version = "2.0.16", features = ["derive"] }
 
 [dev-dependencies]
 surrealdb_orm = { path = "../surrealdb_orm" }

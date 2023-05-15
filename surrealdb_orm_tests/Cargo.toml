@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 surrealdb_orm = { path = "../surrealdb_orm" }
 surrealdb_orm_derive = { path = "../surrealdb_orm_derive" }
-syn = { version = "2.0.16", features = ["derive", "full"] }
+surrealdb = "1.0.0-beta.9"
 
 [[test]]
 name = "orm_tests"
