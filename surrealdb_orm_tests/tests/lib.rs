@@ -134,3 +134,12 @@ async fn table_update() {
     assert!(tu.is_some());
     assert_eq!(tu.unwrap().name, tc.name);
 }
+
+#[tokio::test]
+async fn table_select() {
+    let db = database().await;
+
+    let t = Test::select().field("t").field("field");
+
+    println!("{:#?}", t)
+}

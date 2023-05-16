@@ -6,6 +6,8 @@ use surrealdb::{Connection, Error, Surreal};
 use surrealdb::error::Db;
 use surrealdb::sql::Thing;
 
+use crate::query_builder::{Query, TableQuery, NoFieldsQuery};
+
 #[async_trait]
 pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 {
@@ -55,4 +57,11 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 
         Ok(s)
     }
+
+    fn select() -> Query<TableQuery, NoFieldsQuery> {
+        let q = Query::new().from(Self::table_name());
+
+        q
+    }
 }
+
