@@ -36,6 +36,12 @@ impl Query<NoTableQuery, NoFieldsQuery, NoFilterQuery> {
     }
 }
 
+impl Default for Query<NoTableQuery, NoFieldsQuery, NoFilterQuery> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<F> Query<NoTableQuery, F, NoFilterQuery> {
     pub fn from(self, table: impl Into<String>, id: Option<String>) -> Query<TableQuery, F, NoFilterQuery> {
         let Self { fields, limit, filters, .. } = self;
@@ -98,7 +104,7 @@ impl<T> Query<T, FieldsQuery, NoFilterQuery> {
     pub fn field(self, field: impl Into<String>) -> Self {
         let Self { table, id, mut fields, limit, filters, .. } = self;
 
-        let _ = fields.0.push(field.into());
+        fields.0.push(field.into());
 
         Query {
             table,
@@ -151,7 +157,7 @@ impl<T, F> Query<T, F, FilterQuery> {
 }
 
 impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
-    pub async fn execute<C: Connection, T: Table + Default>(self, db: &Surreal<C>) -> Result<Vec<T>, QueryError> {
+    pub async fn execute<C: Connection, T: Table>(self, db: &Surreal<C>) -> Result<Vec<T>, QueryError> {
 
         let mut query = String::from("SELECT");
         let table_fields = T::fields();
@@ -165,7 +171,7 @@ impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
                 }
             }
 
-            let fields_str = self.fields.0.clone().join(",").to_string();
+            let fields_str = self.fields.0.join(",");
 
             query.push_str(&format!(" {}", fields_str))
         }
@@ -209,9 +215,9 @@ impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
             query = query.bind((filter.key, filter.value));
         }
 
-        let mut res = query.await.map_err(|e| QueryError::DB(e))?;
+        let mut res = query.await.map_err(QueryError::DB)?;
 
-        let table_vec: Vec<T> = res.take(0).map_err(|e| QueryError::DB(e))?;
+        let table_vec: Vec<T> = res.take(0).map_err(QueryError::DB)?;
 
         Ok(table_vec)
     }

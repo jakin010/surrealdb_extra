@@ -21,7 +21,7 @@ pub(crate) fn get_field_names(input: &DeriveInput) -> Result<String, Error> {
         fields.push(',');
     }
 
-    if fields.chars().last().unwrap() == ',' {
+    if fields.ends_with(',') {
         fields.pop();
     }
 

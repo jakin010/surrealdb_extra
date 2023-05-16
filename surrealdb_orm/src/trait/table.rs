@@ -60,9 +60,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     }
 
     fn select(id: Option<String>) -> Query<TableQuery, NoFieldsQuery, NoFilterQuery> {
-        let q = Query::new().from(Self::table_name(), id);
-
-        q
+        Query::new().from(Self::table_name(), id)
     }
 }
 

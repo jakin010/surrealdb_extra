@@ -7,7 +7,7 @@ pub(crate) fn get_table_name(input: &DeriveInput) -> Result<String, Error> {
     for attr in &input.attrs {
         if attr.path().is_ident("table") {
             let nested = attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated).unwrap();
-            for meta in nested {
+            if let Some(meta) = nested.into_iter().next() {
                 let v = meta.require_name_value().and_then(|mnv| {
 
                     if !mnv.path.is_ident(attr_name) {
@@ -23,7 +23,7 @@ pub(crate) fn get_table_name(input: &DeriveInput) -> Result<String, Error> {
                         Lit::Str(lit) => {
                             let v = lit.value();
 
-                            if !v.chars().nth(0).unwrap().is_alphabetic() {
+                            if !v.chars().next().unwrap().is_alphabetic() {
                                 panic!("table({}) attribute first character must be alphabetic", attr_name);
                             }
 
