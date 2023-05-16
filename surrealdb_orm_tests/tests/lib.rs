@@ -7,11 +7,12 @@ use surrealdb_orm::query_builder::filter::{LogicalOperator, RelationalOperator};
 use surrealdb_orm::Table;
 
 #[allow(dead_code)]
-#[derive(Debug, Default, Table, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Table, Serialize, Deserialize, Clone, PartialEq)]
 #[table(name = "test_test")]
 pub struct Test {
     id: Option<Thing>,
     name: String,
+    n: Option<usize>,
 }
 
 async fn database() -> Surreal<Any> {
@@ -32,6 +33,7 @@ fn table_derive_get_id() {
     let t = Test {
         id: Some(Thing::from(("test", "test"))),
         name: "".to_string(),
+        ..Test::default()
     };
     assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test", "test")))
 }
@@ -55,6 +57,7 @@ async fn table_create() {
     let t = Test {
         id: None,
         name: "test".to_string(),
+        ..Test::default()
     };
 
     let tc = t.clone().create(&db).await.unwrap();
@@ -69,6 +72,7 @@ async fn table_db_get_by_id() {
     let t = Test {
         id: None,
         name: "test data".to_string(),
+        ..Test::default()
     };
 
     let tc = t.create(&db).await.unwrap();
@@ -86,6 +90,7 @@ async fn table_delete() {
     let t = Test {
         id: None,
         name: "test data".to_string(),
+        ..Test::default()
     };
 
     let tc = t.create(&db).await.unwrap();
@@ -107,6 +112,7 @@ async fn table_get_all() {
         let t = Test {
             id: None,
             name: "test data".to_string(),
+            ..Test::default()
         };
 
         let _ = t.create(&db).await.unwrap();
@@ -124,6 +130,7 @@ async fn table_update() {
     let t = Test {
         id: None,
         name: "test data".to_string(),
+        ..Test::default()
     };
 
     let mut tc = t.create(&db).await.unwrap();
@@ -137,24 +144,103 @@ async fn table_update() {
 }
 
 #[tokio::test]
-async fn table_select() {
+async fn table_select_limit() {
+    let db = database().await;
+
+    for n in 0..10 {
+        let t = Test {
+            id: None,
+            name: "test data".to_string(),
+            n: Some(n),
+            ..Test::default()
+        };
+
+        let _ = t.create(&db).await.unwrap();
+    }
+
+    let vt = Test::select(None)
+        .field("name")
+        .field("n")
+        .limit(5)
+        .execute::<Test>(&db).await.unwrap();
+
+    assert_eq!(vt.len(), 5);
+}
+
+#[tokio::test]
+async fn table_select_name() {
     let db = database().await;
 
     let t = Test {
-        id: None,
-        name: "test".to_string(),
+        name: "test data".to_string(),
+        ..Test::default()
     };
 
-    t.create(&db).await.unwrap();
+    let _ = t.clone().create(&db).await.unwrap();
 
-    let t = Test::select(None)
+    let vt = Test::select(None)
+        .field("name")
+        .execute::<Test>(&db).await.unwrap();
+
+    assert_eq!(t, vt.get(0).unwrap().clone())
+}
+
+#[tokio::test]
+async fn table_select_filter() {
+    let db = database().await;
+
+    let t = Test {
+        name: "test data".to_string(),
+        ..Test::default()
+    };
+
+    let _ = t.clone().create(&db).await.unwrap();
+
+    let t2 = Test {
+        name: "test lala".to_string(),
+        ..Test::default()
+    };
+
+    let _ = t2.create(&db).await.unwrap();
+
+    let vt = Test::select(None)
+        .field("name")
+        .where_filter()
+        .filter(("name", RelationalOperator::Equal, "test data", LogicalOperator::End)).unwrap_left()
+        .execute::<Test>(&db).await.unwrap();
+
+    assert_eq!(vt.len(), 1);
+    assert_eq!(t, vt.get(0).unwrap().clone())
+}
+
+
+
+#[tokio::test]
+async fn table_select_filter_id() {
+    let db = database().await;
+
+    let t = Test {
+        id: Some(Thing::from((Test::table_name().as_str(), "test1"))),
+        name: "test data".to_string(),
+        ..Test::default()
+    };
+
+    let _ = t.clone().create(&db).await.unwrap();
+
+    let t2 = Test {
+        name: "test lala".to_string(),
+        ..Test::default()
+    };
+
+    let _ = t2.create(&db).await.unwrap();
+
+    let vt = Test::select(Some("test1".into()))
         .field("id")
         .field("name")
-        .limit(5)
         .where_filter()
-        // .filter(("id", RelationalOperator::Equal, "11", LogicalOperator::Or)).unwrap_right()
-        .filter(("name", RelationalOperator::Equal, "tet", LogicalOperator::End)).unwrap_left()
-        .execute::<Any, Test>(&db).await;
+        .filter(("name", RelationalOperator::Equal, "test data", LogicalOperator::End)).unwrap_left()
+        .execute::<Test>(&db).await.unwrap();
 
-    println!("{:#?}", t)
+    assert_eq!(vt.len(), 1);
+    assert_eq!(t, vt.get(0).unwrap().clone())
 }

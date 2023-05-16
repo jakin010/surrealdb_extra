@@ -157,7 +157,7 @@ impl<T, F> Query<T, F, FilterQuery> {
 }
 
 impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
-    pub async fn execute<C: Connection, T: Table>(self, db: &Surreal<C>) -> Result<Vec<T>, QueryError> {
+    pub async fn execute<T: Table>(self, db: &Surreal<impl Connection>) -> Result<Vec<T>, QueryError> {
 
         let mut query = String::from("SELECT");
         let table_fields = T::fields();
@@ -198,10 +198,6 @@ impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
         if self.limit.is_some() {
             query.push_str(&format!(" LIMIT {}", self.limit.unwrap()))
         }
-
-        println!("{}", query);
-
-
 
         let mut query = db.query(query);
 
