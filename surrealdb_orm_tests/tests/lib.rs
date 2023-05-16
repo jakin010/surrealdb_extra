@@ -3,6 +3,7 @@ use surrealdb::engine::any::{Any, connect};
 use surrealdb::kvs::Datastore;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
+use surrealdb_orm::query_builder::filter::{LogicalOperator, RelationalOperator};
 use surrealdb_orm::Table;
 
 #[allow(dead_code)]
@@ -139,7 +140,21 @@ async fn table_update() {
 async fn table_select() {
     let db = database().await;
 
-    let t = Test::select().field("t").field("field");
+    let t = Test {
+        id: None,
+        name: "test".to_string(),
+    };
+
+    t.create(&db).await.unwrap();
+
+    let t = Test::select(None)
+        .field("id")
+        .field("name")
+        .limit(5)
+        .where_filter()
+        // .filter(("id", RelationalOperator::Equal, "11", LogicalOperator::Or)).unwrap_right()
+        .filter(("name", RelationalOperator::Equal, "tet", LogicalOperator::End)).unwrap_left()
+        .execute::<Any, Test>(&db).await;
 
     println!("{:#?}", t)
 }
