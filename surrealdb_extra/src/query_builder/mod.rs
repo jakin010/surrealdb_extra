@@ -3,7 +3,6 @@ pub mod filter;
 pub mod err;
 
 use std::marker::PhantomData;
-use std::ops::Not;
 use either::{Either, Left, Right};
 use surrealdb::{Connection, Surreal};
 use crate::query_builder::err::QueryError;
@@ -160,17 +159,10 @@ impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
     pub async fn execute<T: Table>(self, db: &Surreal<impl Connection>) -> Result<Vec<T>, QueryError> {
 
         let mut query = String::from("SELECT");
-        let table_fields = T::fields();
 
         if self.fields.0.contains(&"*".to_string()) {
             query.push_str(" *")
         } else {
-            for f in &self.fields.0 {
-                if !table_fields.contains(&f.as_str()) {
-                    return Err(QueryError::FieldDoesNotExist(f.clone()))
-                }
-            }
-
             let fields_str = self.fields.0.join(",");
 
             query.push_str(&format!(" {}", fields_str))
@@ -186,11 +178,6 @@ impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
             query.push_str(" WHERE");
 
             for filter in &self.filters {
-
-                if table_fields.contains(&filter.key.as_str()).not() {
-                    return Err(QueryError::FieldDoesNotExist(filter.key.clone()))
-                }
-
                 query.push_str(&format!(" {}", filter.to_string()))
             }
         }
