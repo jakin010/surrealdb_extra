@@ -1,1 +1,1 @@
-crates-io.md
+../crates-io.md
