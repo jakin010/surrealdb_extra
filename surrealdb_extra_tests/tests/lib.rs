@@ -3,8 +3,8 @@ use surrealdb::engine::any::{Any, connect};
 use surrealdb::kvs::Datastore;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
-use surrealdb_orm::query_builder::filter::{LogicalOperator, RelationalOperator};
-use surrealdb_orm::Table;
+use surrealdb_extra::query_builder::filter::{LogicalOperator, RelationalOperator};
+use surrealdb_extra::Table;
 
 #[allow(dead_code)]
 #[derive(Debug, Default, Table, Serialize, Deserialize, Clone, PartialEq)]

@@ -1,4 +1,4 @@
-pub use ::surrealdb_orm_derive::Table;
+pub use ::surrealdb_extra_derive::Table;
 use ::async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::Serialize;

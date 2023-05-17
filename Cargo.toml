@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "surrealdb_orm",
-    "surrealdb_orm_derive",
-    "surrealdb_orm_tests"
+    "surrealdb_extra",
+    "surrealdb_extra_derive",
+    "surrealdb_extra_tests"
 ]
