@@ -4,11 +4,10 @@ pub mod err;
 
 use std::marker::PhantomData;
 use either::{Either, Left, Right};
-use surrealdb::{Connection, Surreal};
+use surrealdb::{Connection, Response, Surreal};
 use crate::query_builder::err::QueryError;
 use crate::query_builder::filter::{Filter, LogicalOperator, RelationalOperator};
 use crate::query_builder::states::{FieldsQuery, FilterQuery, NoFieldsQuery, NoFilterQuery, NoTableQuery, TableQuery};
-use crate::Table;
 
 #[derive(Debug)]
 pub struct Query<T, F, FT> {
@@ -19,8 +18,6 @@ pub struct Query<T, F, FT> {
     filters: Vec<Filter>,
     phantom: PhantomData<FT>
 }
-
-
 
 impl Query<NoTableQuery, NoFieldsQuery, NoFilterQuery> {
     pub fn new() -> Self  {
@@ -156,7 +153,7 @@ impl<T, F> Query<T, F, FilterQuery> {
 }
 
 impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
-    pub async fn execute<T: Table>(self, db: &Surreal<impl Connection>) -> Result<Vec<T>, QueryError> {
+    pub async fn execute(self, db: &Surreal<impl Connection>) -> Result<Response, QueryError> {
 
         let mut query = String::from("SELECT");
 
@@ -198,11 +195,8 @@ impl Query<TableQuery, FieldsQuery, NoFilterQuery> {
             query = query.bind((filter.key, filter.value));
         }
 
-        let mut res = query.await.map_err(QueryError::DB)?;
+        let res = query.await.map_err(QueryError::DB)?;
 
-        let table_vec: Vec<T> = res.take(0).map_err(QueryError::DB)?;
-
-        Ok(table_vec)
+        Ok(res)
     }
 }
-

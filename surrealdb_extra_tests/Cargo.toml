@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-surrealdb_extra = { path = "../surrealdb_extra" }
+surrealdb_extra = { path = "../surrealdb_extra", features = ["derive"] }
 surrealdb_extra_derive = { path = "../surrealdb_extra_derive" }
 surrealdb = { version = "1.0.0-beta.9", features = ["kv-mem"] }
 serde = { version = "1.0.163", features = ["derive"] }

@@ -1,7 +1,7 @@
-use surrealdb::Error;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum QueryError {
-    TableDoesNotMatchName,
-    DB(Error)
+    #[error("{0}")]
+    DB(::surrealdb::Error)
 }

@@ -25,11 +25,11 @@ pub fn table(input: TokenStream) -> TokenStream {
             }
 
             fn get_id(&self) -> &Option<::surrealdb::sql::Thing> {
-               &self.id
+                &self.id
             }
 
-            fn set_id(&mut self, id: ::surrealdb::sql::Thing) {
-                self.id = Some(id);
+            fn set_id(&mut self, id: impl Into<::surrealdb::sql::Thing>) {
+                self.id = Some(id.into());
             }
 
             fn fields() -> Vec<&'static str> {
