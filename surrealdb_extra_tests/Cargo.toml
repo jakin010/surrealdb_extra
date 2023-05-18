@@ -2,6 +2,11 @@
 name = "surrealdb_extra_tests"
 version = "0.1.0"
 edition = "2021"
+readme = "crates-io.md"
+documentation = "https://docs.rs/surrealdb_extra"
+repository = "https://github.com/jakin010/surrealdb_extra"
+keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_builder"]
+categories = ["database", "database-implementations"]
 
 [dependencies]
 surrealdb_extra = { path = "../surrealdb_extra", features = ["derive"] }

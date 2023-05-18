@@ -7,7 +7,7 @@ description = "Derive crate for surrealdb_extra"
 readme = "crates-io.md"
 documentation = "https://docs.rs/surrealdb_extra"
 repository = "https://github.com/jakin010/surrealdb_extra"
-keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "surrealdb_query_builder", "orm", "query_builder"]
+keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_builder"]
 categories = ["database", "database-implementations"]
 
 [lib]
