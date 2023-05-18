@@ -5,8 +5,10 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Adds a orm and query builder on top of surrealdb"
 readme = "crates-io.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+documentation = "https://docs.rs/surrealdb_extra"
+repository = "https://github.com/jakin010/surrealdb_extra"
+keywords = ["surrealdb", "surrealdb_extra", "surrealdb orm", "surrealdb query builder", "orm", "query builder"]
+categories = ["database", "database-implementations"]
 
 [dependencies]
 surrealdb_extra_derive = { version = "0.1.0", path = "../surrealdb_extra_derive" }

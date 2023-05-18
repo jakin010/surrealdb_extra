@@ -81,7 +81,7 @@
     use surrealdb_extra::query_builder::Query;
     use serde::{Serialize, Deserialize};
     use surrealdb::sql::Thing;
-    
+
     #[derive(Table, Serialize, Deserialize)]
     #[table(name = "struct")]
     pub struct Struct {
