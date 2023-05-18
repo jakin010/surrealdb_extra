@@ -1,3 +1,98 @@
+//! The `Query` struct provides utilities for building and executing database queries.
+//!
+//! # Examples
+//!
+//! Creating a `Query` instance:
+//!
+//! ``` rust
+//! use surrealdb_extra::query_builder::Query;
+//!
+//! let mut query = Query::new();
+//!
+//! ```
+//! Set the table:
+//!
+//! ``` rust
+//!
+//! use surrealdb_extra::query_builder::Query;
+//! let query = Query::new().from("test", None);
+//!
+//! ```
+//! Set only som fields to get
+//!
+//! ``` rust
+//!
+//! use surrealdb_extra::query_builder::Query;
+//! let query = Query::new().from("test", None).field("field1").field("field2");
+//!
+//! ```
+//!
+//! Set filter
+//!
+//! ``` rust
+//!
+//! use surrealdb_extra::query_builder::filter::{LogicalOperator, RelationalOperator};
+//! use surrealdb_extra::query_builder::Query;
+//! let query = Query::new().from("test", None)
+//!     // To start filtering this function needs to be called
+//!     .where_filter()
+//!     // Filter is made via tuple of 4
+//!     // 1. Field name
+//!     // 2. `RelationalOperator` enum which represents the different relational operators available for filter conditions, such as `Equal`, `NotEqual`, `LessThan`, etc.
+//!     // 3. Value of the field
+//!     // 4. `LogicalOperator` enum which represents the logical operators available for combining filter conditions, including `And` and `Or`.
+//!     .filter(("field1", RelationalOperator::Equal, "value1", LogicalOperator::And)).unwrap_right() // If you want to add another filer use the `And` or `Or` `LogicalOperator` and unwrap or handle the error of the right
+//!     .filter(("field2", RelationalOperator::NotEqual, "value2", LogicalOperator::End)).unwrap_left(); // If you want to stop filtering use the `End` `LogicalOperator` and unwrap or handle the error of the left
+//!
+//!
+//! ```
+//!
+//! Set limit
+//! ``` rust
+//!
+//! use surrealdb_extra::query_builder::Query;
+//! let query = Query::new().from("test", None).limit(10);
+//!
+//! ```
+//!
+//! Execute the query
+//! ``` rust
+//! use surrealdb::kvs::Datastore;
+//! use surrealdb::engine::any::connect;
+//! use surrealdb_extra::query_builder::Query;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!
+//!     Datastore::new("memory").await.unwrap();
+//!     let db = connect("mem://").await.unwrap();
+//!     db.use_ns("ns").use_db("db").await.unwrap();
+//!
+//!     let query = Query::new().from("test", None).field("test").execute(&db).await.unwrap();
+//!
+//! }
+//!
+//! ```
+//!
+//! Start query from table
+#[cfg_attr(feature = "derive", doc = r##"
+``` rust
+    use surrealdb_extra::table::Table;
+    use surrealdb_extra::query_builder::Query;
+    use serde::{Serialize, Deserialize};
+    use surrealdb::sql::Thing;
+    
+    #[derive(Table, Serialize, Deserialize)]
+    #[table(name = "struct")]
+    pub struct Struct {
+        id: Option<Thing>
+    };
+
+    let query = Struct::select(None).field("test");
+
+```
+"##)]
+
 pub mod states;
 pub mod filter;
 pub mod err;

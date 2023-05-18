@@ -19,3 +19,7 @@ thiserror = "1.0.40"
 
 [features]
 derive = []
+
+[dev-dependencies]
+surrealdb = { version = "1.0.0-beta.9", features = ["kv-mem"] }
+tokio = { version = "1.28.1", features = ["macros"] }

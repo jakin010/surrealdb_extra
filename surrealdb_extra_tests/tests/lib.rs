@@ -4,6 +4,7 @@ use surrealdb::kvs::Datastore;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
 use surrealdb_extra::query_builder::filter::{LogicalOperator, RelationalOperator};
+use surrealdb_extra::query_builder::Query;
 use surrealdb_extra::table::Table;
 
 #[allow(dead_code)]
@@ -165,7 +166,7 @@ async fn table_select_limit() {
         .execute(&db).await.unwrap();
 
     let res: Vec<Test> = vt.take(0).unwrap();
-    
+
     assert_eq!(res.len(), 5);
 }
 
@@ -249,4 +250,29 @@ async fn table_select_filter_id() {
 
     assert_eq!(res.len(), 1);
     assert_eq!(t, res.get(0).unwrap().clone())
+}
+
+#[tokio::test]
+async fn only_query() {
+    let db = database().await;
+
+    for n in 0..10 {
+        let t = Test {
+            id: None,
+            name: "test data".to_string(),
+            n: Some(n),
+            ..Test::default()
+        };
+
+        let _ = t.create(&db).await.unwrap();
+    }
+
+    let mut q = Query::new().from(Test::table_name(), None)
+        .field("name")
+        .execute(&db).await.unwrap();
+
+
+    let res: Vec<Test> = q.take(0).unwrap();
+
+    assert_eq!(res.len(), 10);
 }

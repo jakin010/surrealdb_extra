@@ -1,3 +1,58 @@
+//! The `Table` trait represents a database table and provides common operations for interacting with the table.
+//!
+//! To use this trait, implement it for your struct representing the table. The struct must have the following attributes:
+//! - `#[derive(Table)]` to automatically derive the implementation of the `Table` trait.
+//! - `#[table(name = "...")]` to specify the name of the table in the database.
+//!
+//! # Example
+//!
+//!
+//! ``` rust
+//!  use serde::{Serialize, Deserialize};
+//!  use surrealdb_extra::table::Table;
+//!  use surrealdb::sql::Thing;
+//!  use surrealdb::engine::any::connect;
+//!  use surrealdb::{Surreal, Result};
+//!  use tokio::main;
+//!  use surrealdb::kvs::Datastore;
+//!
+//! // Serialize and Deserialize are must have derives
+//! #[derive(Table, Serialize, Deserialize, Clone)]
+//! #[table(name = "my_table")]
+//! struct MyStruct {
+//!  // id is the only field that is a must id must be of type Option<::surrealdb::sql::Thing>
+//!     id: Option<Thing>,
+//!     // other fields...
+//!     pub name: String
+//! }
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
+//!     Datastore::new("memory").await.unwrap();
+//!     let db = connect("mem://").await.unwrap();
+//!     db.use_ns("ns").use_db("db").await.unwrap();
+//!
+//!     let my_struct = MyStruct {
+//!         id: None,
+//!         name: "my name is".into()
+//!     };
+//!
+//!     let created_struct: MyStruct = my_struct.create(&db).await.unwrap();
+//!
+//!     let mut updated_struct = created_struct.clone();
+//!     updated_struct.name = "test".to_string();
+//!
+//!     let updated_struct: Option<MyStruct> = updated_struct.update(&db).await.unwrap();
+//!
+//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(updated_struct.unwrap().id.unwrap(), &db).await.unwrap();
+//!
+//!     let get_all: Vec<MyStruct> = MyStruct::get_all(&db).await.unwrap();
+//!
+//!     let get_by_id: Option<MyStruct> = MyStruct::get_by_id(Thing::from(("my_table", "x")), &db).await.unwrap();
+//!
+//!     Ok(())
+//! }
+//! ```
+
 pub mod err;
 
 pub use ::surrealdb_extra_derive::Table;
