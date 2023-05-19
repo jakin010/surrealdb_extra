@@ -117,6 +117,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         Ok(s)
     }
 
+    #[cfg(feature = "query_builder")]
     fn select(id: Option<String>) -> Query<TableQuery, NoFieldsQuery, NoFilterQuery> {
         Query::new().from(Self::table_name(), id)
     }
