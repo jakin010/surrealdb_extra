@@ -55,7 +55,9 @@
 
 pub mod err;
 
+#[cfg(feature = "derive")]
 pub use ::surrealdb_extra_derive::Table;
+
 use ::async_trait::async_trait;
 use ::serde::de::DeserializeOwned;
 use ::serde::Serialize;

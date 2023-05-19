@@ -2,7 +2,7 @@
 //!
 //! # Examples
 //!
-//! Creating a `Query` instance:
+//! # Creating a `Query` instance:
 //!
 //! ``` rust
 //! use surrealdb_extra::query_builder::Query;
@@ -10,7 +10,7 @@
 //! let mut query = Query::new();
 //!
 //! ```
-//! Set the table:
+//! # Set the table:
 //!
 //! ``` rust
 //!
@@ -18,7 +18,7 @@
 //! let query = Query::new().from("test", None);
 //!
 //! ```
-//! Set only som fields to get
+//! # Set only som fields to get
 //!
 //! ``` rust
 //!
@@ -27,7 +27,7 @@
 //!
 //! ```
 //!
-//! Set filter
+//! # Set filter
 //!
 //! ``` rust
 //!
@@ -47,7 +47,7 @@
 //!
 //! ```
 //!
-//! Set limit
+//! # Set limit
 //! ``` rust
 //!
 //! use surrealdb_extra::query_builder::Query;
@@ -55,7 +55,7 @@
 //!
 //! ```
 //!
-//! Execute the query
+//! # Execute the query
 //! ``` rust
 //! use surrealdb::kvs::Datastore;
 //! use surrealdb::engine::any::connect;
