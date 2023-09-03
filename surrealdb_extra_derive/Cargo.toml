@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb_extra_derive"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Derive crate for surrealdb_extra"
@@ -15,7 +15,7 @@ proc-macro = true
 
 [dependencies]
 quote = "1.0.26"
-surrealdb = "1.0.0-beta.9"
+surrealdb = "1.0.0-beta.10"
 syn = { version = "2.0.16", features = ["derive"] }
 
 [dev-dependencies]

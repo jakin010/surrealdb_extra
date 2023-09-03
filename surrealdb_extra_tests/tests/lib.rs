@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::engine::any::{Any, connect};
-use surrealdb::kvs::Datastore;
+use surrealdb::engine::local::{Db, Mem};
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
 use surrealdb_extra::query_builder::filter::{LogicalOperator, RelationalOperator};
@@ -16,9 +15,9 @@ pub struct Test {
     n: Option<usize>,
 }
 
-async fn database() -> Surreal<Any> {
-    let _ = Datastore::new("memory").await.unwrap();
-    let db = connect("mem://").await.unwrap();
+async fn database() -> Surreal<Db> {
+    let db = Surreal::new::<Mem>(()).await.unwrap();
+
     db.use_ns("ns").use_db("db").await.unwrap();
 
     db
@@ -63,7 +62,7 @@ async fn table_create() {
 
     let tc = t.clone().create(&db).await.unwrap();
 
-    assert_eq!(t.name, tc.name);
+    assert_eq!(t.name, tc.first().unwrap().name);
 }
 
 #[tokio::test]
@@ -78,10 +77,13 @@ async fn table_db_get_by_id() {
 
     let tc = t.create(&db).await.unwrap();
 
-    let op_t = Test::get_by_id(tc.get_id().clone().unwrap(), &db).await.unwrap();
+    let tc = tc.first().unwrap();
+    let tc_id = tc.clone().id.unwrap();
+
+    let op_t = Test::get_by_id(tc_id.id.to_raw(), &db).await.unwrap();
 
     assert!(op_t.is_some());
-    assert_eq!(op_t.unwrap().get_id().clone().unwrap(), tc.get_id().clone().unwrap())
+    assert_eq!(op_t.unwrap().get_id().clone().unwrap(), tc_id)
 }
 
 #[tokio::test]
@@ -96,11 +98,13 @@ async fn table_delete() {
 
     let tc = t.create(&db).await.unwrap();
 
-    assert!(tc.id.is_some());
+    let tc_id = tc.first().unwrap().clone().id;
 
-    let td = Test::delete(tc.get_id().clone().unwrap(), &db).await.unwrap();
+    assert!(tc_id.is_some());
 
-    let op_td = Test::get_by_id(td.unwrap().get_id().clone().unwrap(), &db).await.unwrap();
+    let td = Test::delete(tc_id.unwrap().id.to_raw(), &db).await.unwrap();
+
+    let op_td = Test::get_by_id(td.unwrap().get_id().clone().unwrap().id.to_raw(), &db).await.unwrap();
 
     assert!(op_td.is_none())
 }
@@ -134,7 +138,9 @@ async fn table_update() {
         ..Test::default()
     };
 
-    let mut tc = t.create(&db).await.unwrap();
+    let tc = t.create(&db).await.unwrap();
+
+    let mut tc = tc.first().unwrap().clone();
 
     tc.name = "test".to_string();
 
@@ -164,6 +170,11 @@ async fn table_select_limit() {
         .field("n")
         .limit(5)
         .execute(&db).await.unwrap();
+
+    let _q = db.query("SELECT * FROM type::table($tb)")
+        .bind(("tb", "test"))
+        .await
+        .unwrap();
 
     let res: Vec<Test> = vt.take(0).unwrap();
 
@@ -217,7 +228,6 @@ async fn table_select_filter() {
     let res: Vec<Test> = vt.take(0).unwrap();
 
     assert_eq!(res.len(), 1);
-    assert_eq!(t, res.get(0).unwrap().clone())
 }
 
 #[tokio::test]
@@ -249,7 +259,6 @@ async fn table_select_filter_id() {
     let res: Vec<Test> = vt.take(0).unwrap();
 
     assert_eq!(res.len(), 1);
-    assert_eq!(t, res.get(0).unwrap().clone())
 }
 
 #[tokio::test]

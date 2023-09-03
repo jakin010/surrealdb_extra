@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "surrealdb_extra",
     "surrealdb_extra_derive",

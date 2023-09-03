@@ -24,3 +24,5 @@ Please refer to the crate's documentation for detailed usage examples and API re
 ## Extra
 
 Note: surrealdb-extra is an independent crate and is not affiliated with or endorsed by SurrealDB or its developers.
+
+Note: Test won't work because of embedded database right now has no support for functions

@@ -3,6 +3,7 @@
 //! To use this trait, implement it for your struct representing the table. The struct must have the following attributes:
 //! - `#[derive(Table)]` to automatically derive the implementation of the `Table` trait.
 //! - `#[table(name = "...")]` to specify the name of the table in the database.
+//! - `id: Option<Thing>` needs to be one of the fields
 //!
 //! # Example
 //!
@@ -36,18 +37,18 @@
 //!         name: "my name is".into()
 //!     };
 //!
-//!     let created_struct: MyStruct = my_struct.create(&db).await.unwrap();
+//!     let created_struct = my_struct.create(&db).await.unwrap();
 //!
-//!     let mut updated_struct = created_struct.clone();
+//!     let mut updated_struct = created_struct.first().unwrap().clone();
 //!     updated_struct.name = "test".to_string();
 //!
 //!     let updated_struct: Option<MyStruct> = updated_struct.update(&db).await.unwrap();
 //!
-//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(updated_struct.unwrap().id.unwrap(), &db).await.unwrap();
+//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(updated_struct.unwrap().id.unwrap().id.to_raw(), &db).await.unwrap();
 //!
 //!     let get_all: Vec<MyStruct> = MyStruct::get_all(&db).await.unwrap();
 //!
-//!     let get_by_id: Option<MyStruct> = MyStruct::get_by_id(Thing::from(("my_table", "x")), &db).await.unwrap();
+//!     let get_by_id: Option<MyStruct> = MyStruct::get_by_id("id", &db).await.unwrap();
 //!
 //!     Ok(())
 //! }
@@ -62,7 +63,6 @@ use ::async_trait::async_trait;
 use ::serde::de::DeserializeOwned;
 use ::serde::Serialize;
 use ::surrealdb::{Connection, Surreal};
-use ::surrealdb::sql::Thing;
 use crate::query_builder::Query;
 use crate::query_builder::states::{NoFieldsQuery, NoFilterQuery, TableQuery};
 pub use crate::table::err::TableError;
@@ -72,21 +72,18 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 {
     fn table_name() -> String;
 
-    fn get_id(&self) -> &Option<::surrealdb::sql::Thing> ;
+    fn get_id(&self) -> &Option<::surrealdb::sql::Thing>;
 
     fn set_id(&mut self, id: impl Into<::surrealdb::sql::Thing>);
 
-    fn fields() -> Vec<&'static str>;
-
-    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Self, TableError> {
-        let s: Self = db.create(Self::table_name()).content(self).await.map_err(TableError::Db)?;
+    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>, TableError> {
+        let s: Vec<Self> = db.create(Self::table_name()).content(self).await.map_err(TableError::Db)?;
 
         Ok(s)
     }
 
-    async fn delete<C: Connection>(id: Thing, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
-        let id = id.id.to_raw();
-        let s: Option<Self> = db.delete((Self::table_name(), id)).await.map_err(TableError::Db)?;
+    async fn delete<C: Connection>(id: impl Into<String> + std::marker::Send, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
+        let s: Option<Self> = db.delete((Self::table_name(), id.into())).await.map_err(TableError::Db)?;
 
         Ok(s)
     }
@@ -97,8 +94,8 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         Ok(vec_s)
     }
 
-    async fn get_by_id<C: Connection>(id: Thing, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
-        let s: Option<Self> = db.select((Self::table_name(), id.id.to_raw())).await.map_err(TableError::Db)?;
+    async fn get_by_id<C: Connection>(id: impl Into<String> + std::marker::Send, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
+        let s: Option<Self> = db.select((Self::table_name(), id.into())).await.map_err(TableError::Db)?;
 
         Ok(s)
     }

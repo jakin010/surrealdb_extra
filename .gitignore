@@ -4,7 +4,7 @@
 .vs_code
 
 # OS
-.DS_Storediesel-rs/diesel
+.DS_Store
 
 # Rust
 /target
