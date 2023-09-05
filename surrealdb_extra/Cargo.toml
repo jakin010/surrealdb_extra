@@ -13,7 +13,7 @@ categories = ["database", "database-implementations"]
 [dependencies]
 surrealdb_extra_derive = { version = "0.2.0", path = "../surrealdb_extra_derive" }
 async-trait = "0.1.68"
-surrealdb = "1.0.0-beta.10"
+surrealdb = "1.0.0-beta.11"
 serde = { version = "1.0.163", features = ["derive"] }
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.40"

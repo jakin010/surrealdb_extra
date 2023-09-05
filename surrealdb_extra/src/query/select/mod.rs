@@ -35,8 +35,9 @@
 //!
 //! # For binding first convert the builder to a `Query<>` type and do binding as usual
 //!
-//! ### Click on the struct for more info
-//!
+//! ## Click on the struct for more info
+//! 
+//! ## Their is only 1 missing function which is with because the `With` enum is not made public
 
 pub(crate) mod states;
 
