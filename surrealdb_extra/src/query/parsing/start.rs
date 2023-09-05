@@ -1,6 +1,6 @@
 use surrealdb::sql::{Number, Start, Value};
 
-pub struct ExtraStart(pub(crate) Start);
+pub struct ExtraStart(pub Start);
 
 impl From<Start> for ExtraStart {
     fn from(value: Start) -> Self {

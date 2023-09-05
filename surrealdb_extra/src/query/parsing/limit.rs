@@ -1,6 +1,6 @@
 use surrealdb::sql::{Limit, Number, Value};
 
-pub struct ExtraLimit(pub(crate) Limit);
+pub struct ExtraLimit(pub Limit);
 
 impl From<Limit> for ExtraLimit {
     fn from(value: Limit) -> Self {

@@ -1,7 +1,7 @@
 use rayon::prelude::*;
 use surrealdb::sql::{Idiom, Part};
 
-pub struct ExtraIdiom(pub(crate) Idiom);
+pub struct ExtraIdiom(pub Idiom);
 
 impl From<Idiom> for ExtraIdiom {
     fn from(value: Idiom) -> Self {

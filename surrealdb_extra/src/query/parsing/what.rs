@@ -1,6 +1,6 @@
 use surrealdb::sql::{Table, Thing, Value, Values};
 
-pub struct ExtraValue(pub(crate) Values);
+pub struct ExtraValue(pub Values);
 
 impl From<Values> for ExtraValue {
     fn from(value: Values) -> Self {

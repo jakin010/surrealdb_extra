@@ -9,7 +9,7 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra = { path = "../surrealdb_extra", features = ["default"] }
+surrealdb_extra = { path = "../surrealdb_extra", features = ["default", "query"] }
 surrealdb_extra_derive = { path = "../surrealdb_extra_derive" }
 surrealdb = { version = "1.0.0-beta.10", features = ["kv-mem", "scripting"] }
 serde = { version = "1.0.163", features = ["derive"] }

@@ -15,7 +15,7 @@ impl OrderDirection {
     }
 }
 
-pub struct ExtraOrder(pub(crate) Order);
+pub struct ExtraOrder(pub Order);
 
 impl From<Order> for ExtraOrder {
     fn from(value: Order) -> Self {

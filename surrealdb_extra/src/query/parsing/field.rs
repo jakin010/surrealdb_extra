@@ -1,7 +1,7 @@
 use surrealdb::sql::{Field, Value};
 use crate::query::parsing::idiom::ExtraIdiom;
 
-pub struct ExtraField(pub(crate) Field);
+pub struct ExtraField(pub Field);
 
 impl From<Field> for ExtraField {
     fn from(value: Field) -> Self {

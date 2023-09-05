@@ -1,3 +1,45 @@
+//! # Starting the builder can be done in 2 ways
+//!
+//! ## Using the `Surrealdb<C>` type
+//! ```rust
+//! use surrealdb::engine::any::connect;
+//! use surrealdb_extra::query::statement::StatementBuilder;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!
+//!     let db = connect("mem://").await.unwrap();
+//!     db.use_ns("ns").use_db("db").await.unwrap();
+//!
+//!     let builder = db.select_builder();
+//!
+//!     let query = builder.what("test").field("test").to_query();
+//! }
+//! ```
+//!
+//! ## Using new function inside the builder and passing a reference of type `Surrealdb<C>`
+//! ```rust
+//! use surrealdb::engine::any::connect;
+//! use surrealdb_extra::query::select::SelectBuilder;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!
+//!
+//!     let db = connect("mem://").await.unwrap();
+//!     db.use_ns("ns").use_db("db").await.unwrap();
+//!
+//!     let builder = SelectBuilder::new(&db);
+//!
+//!     let query = builder.what("test").field("test").to_query();
+//! }
+//! ```
+//!
+//! # For binding first convert the builder to a `Query<>` type and do binding as usual
+//!
+//! ### Click on the struct for more info
+//!
+
 pub(crate) mod states;
 
 use std::marker::PhantomData;
@@ -41,6 +83,23 @@ impl<'r, C> SelectBuilder<'r, NoWhat, NoFields, C>
         }
     }
 
+    /// This functions selects from either the table, table:id or more
+    ///
+    /// Example:
+    /// ```rust
+    /// use surrealdb::engine::any::connect;
+    /// use surrealdb::sql::Thing;
+    /// use surrealdb_extra::query::select::SelectBuilder;
+    ///
+    /// async {
+    ///     let db = connect("mem://").await.unwrap();
+    ///     SelectBuilder::new(&db).what("test").field("test"); // This becomes `SELECT test FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what(Thing::from(("test", "test"))).field("test") // This becomes `SELECT test FROM test:test`
+    /// }
+    /// ```
+    ///
+    /// You can also use the Value type inside surrealdb for more complex requests
     pub fn what(self, what: impl Into<ExtraValue>) -> SelectBuilder<'r, FilledWhat, NoFields, C> {
         let Self { mut statement, db, .. } = self;
 
@@ -58,6 +117,33 @@ impl<'r, C> SelectBuilder<'r, NoWhat, NoFields, C>
 impl<'r, F, C> SelectBuilder<'r, FilledWhat, F, C>
     where C: Connection
 {
+    /// This function selects the fields of a table with alias support or more
+    ///
+    /// Example:
+    /// ```rust
+    /// use surrealdb::engine::any::connect;
+    /// use surrealdb::sql::Field;
+    /// use surrealdb_extra::query::select::SelectBuilder;
+    ///
+    /// async {
+    ///     let db = connect("mem://").await.unwrap();
+    ///     SelectBuilder::new(&db).what("test").field(Field::All); // This becomes `SELECT * FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field(Field::All).field(("test", "test.test")); // This becomes `SELECT *, test as test.test FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field("test"); // This becomes `SELECT test FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field("$test"); // This becomes `SELECT $test FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field(("test", "test")); // This becomes `SELECT test as test FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field(("test.test", "test")); // This becomes `SELECT test.test as test FROM test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field(("test", "test.test")); // This becomes `SELECT test as test.test FROM test`
+    /// }
+    /// ```
+    ///
+    /// You can also use the Field type inside surrealdb for more complex requests
     pub fn field(self, field: impl Into<ExtraField>) -> SelectBuilder<'r, FilledWhat, FilledFields, C> {
         let Self { mut statement, db, .. } = self;
 
@@ -76,6 +162,7 @@ impl<'r, F, C> SelectBuilder<'r, FilledWhat, F, C>
 impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     where C: Connection
 {
+    /// You can also use the Idiom type inside surrealdb for more complex requests
     pub fn omit(self, omit: impl Into<ExtraOmit>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -95,6 +182,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the Cond/Value type inside surrealdb for more complex requests
     pub fn condition(self, cond: impl Into<ExtraCond>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -110,6 +198,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the Split/Idiom type inside surrealdb for more complex requests
     pub fn split(self, split: impl Into<ExtraSplit>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -129,6 +218,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the Group/Idiom type inside surrealdb for more complex requests
     pub fn group(self, group: impl Into<ExtraGroup>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -148,6 +238,26 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+
+    /// This function orders the rows
+    ///
+    /// Example:
+    /// ```rust
+    /// use surrealdb::engine::any::connect;
+    /// use surrealdb_extra::query::parsing::order::OrderDirection;
+    /// use surrealdb_extra::query::select::SelectBuilder;
+    ///
+    /// async {
+    ///     let db = connect("mem://").await.unwrap();
+    ///     SelectBuilder::new(&db).what("test").field("test").order(("test", OrderDirection::ASC)); // This becomes `SELECT test FROM test ORDER BY test ASC`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field(("test", "test")).order(("test".to_string(), OrderDirection::DESC)); // This becomes `SELECT test as test FROM test ORDER BY test DESC`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field(("test.test", "test")).order(("test1".to_string(), OrderDirection::DESC)).order((("test2", OrderDirection::ASC))); // This becomes `SELECT test.test as test FROM test ORDER BY test1 DESC, test2 ASC`
+    ///
+    /// }
+    /// ```
+    /// You can also use the Order type inside surrealdb for more complex requests
     pub fn order(self, order: impl Into<ExtraOrder>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -167,6 +277,19 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// This function limit amount of rows
+    ///
+    /// Example:
+    /// ```rust
+    /// use surrealdb::engine::any::connect;
+    /// use surrealdb_extra::query::select::SelectBuilder;
+    ///
+    /// async {
+    ///     let db = connect("mem://").await.unwrap();
+    ///     SelectBuilder::new(&db).what("test").field("test").limit(5); // This becomes `SELECT test FROM test LIMIT 5`
+    /// }
+    /// ```
+    /// You can also use the Limit/Value type inside surrealdb for more complex requests
     pub fn limit(self, limit: impl Into<ExtraLimit>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -182,6 +305,19 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// This function starts rows at x
+    ///
+    /// Example:
+    /// ```rust
+    /// use surrealdb::engine::any::connect;
+    /// use surrealdb_extra::query::select::SelectBuilder;
+    ///
+    /// async {
+    ///     let db = connect("mem://").await.unwrap();
+    ///     SelectBuilder::new(&db).what("test").field("test").start(5); // This becomes `SELECT test FROM test START 5`
+    /// }
+    /// ```
+    /// You can also use the Start/Value type inside surrealdb for more complex requests
     pub fn start(self, start: impl Into<ExtraStart>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -197,6 +333,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the Fetch/Idiom type inside surrealdb for more complex requests
     pub fn fetch(self, fetch: impl Into<ExtraFetch>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -216,6 +353,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the Version type inside surrealdb or `DateTime<Utc>` inside chrono for more complex requests
     pub fn version(self, version: impl Into<ExtraVersion>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -231,6 +369,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the Timeout type inside surrealdb or Duration inside standard for more complex requests
     pub fn timeout(self, timeout: impl Into<ExtraTimeout>) -> Self {
         let Self { mut statement, db, .. } = self;
 
@@ -272,6 +411,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// Converts the builder to query type
     pub fn to_query(self) -> Query<'r, C> {
         self.db.query(self.statement)
     }

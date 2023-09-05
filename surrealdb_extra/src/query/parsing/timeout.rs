@@ -1,7 +1,7 @@
 use std::time;
 use surrealdb::sql::Timeout;
 
-pub struct ExtraTimeout(pub(crate) Timeout);
+pub struct ExtraTimeout(pub Timeout);
 
 impl From<Timeout> for ExtraTimeout {
     fn from(value: Timeout) -> Self {

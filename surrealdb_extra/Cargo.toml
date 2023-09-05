@@ -30,3 +30,10 @@ derive = ["table"]
 [dev-dependencies]
 surrealdb = { version = "1.0.0-beta.10", features = ["kv-mem"] }
 tokio = { version = "1.28.1", features = ["macros"] }
+
+# docs.rs-specific configuration
+[package.metadata.docs.rs]
+# document all features
+all-features = true
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]

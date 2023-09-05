@@ -1,7 +1,7 @@
 use surrealdb::sql::{Fetch, Idiom};
 use crate::query::parsing::idiom::ExtraIdiom;
 
-pub struct ExtraFetch(pub(crate) Fetch);
+pub struct ExtraFetch(pub Fetch);
 
 impl From<Fetch> for ExtraFetch {
     fn from(value: Fetch) -> Self {
