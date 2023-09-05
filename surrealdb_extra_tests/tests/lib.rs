@@ -2,8 +2,6 @@ use serde::{Deserialize, Serialize};
 use surrealdb::engine::local::{Db, Mem};
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
-use surrealdb_extra::query_builder::filter::{LogicalOperator, RelationalOperator};
-use surrealdb_extra::query_builder::Query;
 use surrealdb_extra::table::Table;
 
 #[allow(dead_code)]
@@ -149,139 +147,139 @@ async fn table_update() {
     assert!(tu.is_some());
     assert_eq!(tu.unwrap().name, tc.name);
 }
-
-#[tokio::test]
-async fn table_select_limit() {
-    let db = database().await;
-
-    for n in 0..10 {
-        let t = Test {
-            id: None,
-            name: "test data".to_string(),
-            n: Some(n),
-            ..Test::default()
-        };
-
-        let _ = t.create(&db).await.unwrap();
-    }
-
-    let mut vt = Test::select(None)
-        .field("name")
-        .field("n")
-        .limit(5)
-        .execute(&db).await.unwrap();
-
-    let _q = db.query("SELECT * FROM type::table($tb)")
-        .bind(("tb", "test"))
-        .await
-        .unwrap();
-
-    let res: Vec<Test> = vt.take(0).unwrap();
-
-    assert_eq!(res.len(), 5);
-}
-
-#[tokio::test]
-async fn table_select_name() {
-    let db = database().await;
-
-    let t = Test {
-        name: "test data".to_string(),
-        ..Test::default()
-    };
-
-    let _ = t.clone().create(&db).await.unwrap();
-
-    let mut vt = Test::select(None)
-        .field("name")
-        .execute(&db).await.unwrap();
-
-    let res: Vec<Test> = vt.take(0).unwrap();
-
-    assert_eq!(t, res.get(0).unwrap().clone())
-}
-
-#[tokio::test]
-async fn table_select_filter() {
-    let db = database().await;
-
-    let t = Test {
-        name: "test data".to_string(),
-        ..Test::default()
-    };
-
-    let _ = t.clone().create(&db).await.unwrap();
-
-    let t2 = Test {
-        name: "test lala".to_string(),
-        ..Test::default()
-    };
-
-    let _ = t2.create(&db).await.unwrap();
-
-    let mut vt = Test::select(None)
-        .field("name")
-        .where_filter()
-        .filter(("name", RelationalOperator::Equal, "test data", LogicalOperator::End)).unwrap_left()
-        .execute(&db).await.unwrap();
-
-    let res: Vec<Test> = vt.take(0).unwrap();
-
-    assert_eq!(res.len(), 1);
-}
-
-#[tokio::test]
-async fn table_select_filter_id() {
-    let db = database().await;
-
-    let t = Test {
-        id: Some((Test::table_name(), "test1".to_string()).into()),
-        name: "test data".to_string(),
-        ..Test::default()
-    };
-
-    let _ = t.clone().create(&db).await.unwrap();
-
-    let t2 = Test {
-        name: "test lala".to_string(),
-        ..Test::default()
-    };
-
-    let _ = t2.create(&db).await.unwrap();
-
-    let mut vt = Test::select(Some("test1".into()))
-        .field("id")
-        .field("name")
-        .where_filter()
-        .filter(("name", RelationalOperator::Equal, "test data", LogicalOperator::End)).unwrap_left()
-        .execute(&db).await.unwrap();
-
-    let res: Vec<Test> = vt.take(0).unwrap();
-
-    assert_eq!(res.len(), 1);
-}
-
-#[tokio::test]
-async fn only_query() {
-    let db = database().await;
-
-    for n in 0..10 {
-        let t = Test {
-            id: None,
-            name: "test data".to_string(),
-            n: Some(n),
-            ..Test::default()
-        };
-
-        let _ = t.create(&db).await.unwrap();
-    }
-
-    let mut q = Query::new().from(Test::table_name(), None)
-        .field("name")
-        .execute(&db).await.unwrap();
-
-
-    let res: Vec<Test> = q.take(0).unwrap();
-
-    assert_eq!(res.len(), 10);
-}
+//
+// #[tokio::test]
+// async fn table_select_limit() {
+//     let db = database().await;
+//
+//     for n in 0..10 {
+//         let t = Test {
+//             id: None,
+//             name: "test data".to_string(),
+//             n: Some(n),
+//             ..Test::default()
+//         };
+//
+//         let _ = t.create(&db).await.unwrap();
+//     }
+//
+//     let mut vt = Test::select(None)
+//         .field("name")
+//         .field("n")
+//         .limit(5)
+//         .execute(&db).await.unwrap();
+//
+//     let _q = db.query("SELECT * FROM type::table($tb)")
+//         .bind(("tb", "test"))
+//         .await
+//         .unwrap();
+//
+//     let res: Vec<Test> = vt.take(0).unwrap();
+//
+//     assert_eq!(res.len(), 5);
+// }
+//
+// #[tokio::test]
+// async fn table_select_name() {
+//     let db = database().await;
+//
+//     let t = Test {
+//         name: "test data".to_string(),
+//         ..Test::default()
+//     };
+//
+//     let _ = t.clone().create(&db).await.unwrap();
+//
+//     let mut vt = Test::select(None)
+//         .field("name")
+//         .execute(&db).await.unwrap();
+//
+//     let res: Vec<Test> = vt.take(0).unwrap();
+//
+//     assert_eq!(t, res.get(0).unwrap().clone())
+// }
+//
+// #[tokio::test]
+// async fn table_select_filter() {
+//     let db = database().await;
+//
+//     let t = Test {
+//         name: "test data".to_string(),
+//         ..Test::default()
+//     };
+//
+//     let _ = t.clone().create(&db).await.unwrap();
+//
+//     let t2 = Test {
+//         name: "test lala".to_string(),
+//         ..Test::default()
+//     };
+//
+//     let _ = t2.create(&db).await.unwrap();
+//
+//     let mut vt = Test::select(None)
+//         .field("name")
+//         .where_filter()
+//         .filter(("name", RelationalOperator::Equal, "test data", LogicalOperator::End)).unwrap_left()
+//         .execute(&db).await.unwrap();
+//
+//     let res: Vec<Test> = vt.take(0).unwrap();
+//
+//     assert_eq!(res.len(), 1);
+// }
+//
+// #[tokio::test]
+// async fn table_select_filter_id() {
+//     let db = database().await;
+//
+//     let t = Test {
+//         id: Some((Test::table_name(), "test1".to_string()).into()),
+//         name: "test data".to_string(),
+//         ..Test::default()
+//     };
+//
+//     let _ = t.clone().create(&db).await.unwrap();
+//
+//     let t2 = Test {
+//         name: "test lala".to_string(),
+//         ..Test::default()
+//     };
+//
+//     let _ = t2.create(&db).await.unwrap();
+//
+//     let mut vt = Test::select(Some("test1".into()))
+//         .field("id")
+//         .field("name")
+//         .where_filter()
+//         .filter(("name", RelationalOperator::Equal, "test data", LogicalOperator::End)).unwrap_left()
+//         .execute(&db).await.unwrap();
+//
+//     let res: Vec<Test> = vt.take(0).unwrap();
+//
+//     assert_eq!(res.len(), 1);
+// }
+//
+// #[tokio::test]
+// async fn only_query() {
+//     let db = database().await;
+//
+//     for n in 0..10 {
+//         let t = Test {
+//             id: None,
+//             name: "test data".to_string(),
+//             n: Some(n),
+//             ..Test::default()
+//         };
+//
+//         let _ = t.create(&db).await.unwrap();
+//     }
+//
+//     let mut q = Query::new().from(Test::table_name(), None)
+//         .field("name")
+//         .execute(&db).await.unwrap();
+//
+//
+//     let res: Vec<Test> = q.take(0).unwrap();
+//
+//     assert_eq!(res.len(), 10);
+// }

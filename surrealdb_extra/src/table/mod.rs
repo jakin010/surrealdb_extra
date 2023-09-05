@@ -28,7 +28,6 @@
 //! }
 //! #[tokio::main]
 //! async fn main() -> Result<()> {
-//!     Datastore::new("memory").await.unwrap();
 //!     let db = connect("mem://").await.unwrap();
 //!     db.use_ns("ns").use_db("db").await.unwrap();
 //!
@@ -63,9 +62,16 @@ use ::async_trait::async_trait;
 use ::serde::de::DeserializeOwned;
 use ::serde::Serialize;
 use ::surrealdb::{Connection, Surreal};
-use crate::query_builder::Query;
-use crate::query_builder::states::{NoFieldsQuery, NoFilterQuery, TableQuery};
 pub use crate::table::err::TableError;
+
+#[cfg(feature = "query")]
+use surrealdb::sql::Thing;
+#[cfg(feature = "query")]
+use crate::query::select::SelectBuilder;
+#[cfg(feature = "query")]
+use crate::query::select::states::{FilledWhat, NoFields};
+#[cfg(feature = "query")]
+use crate::query::statement::StatementBuilder;
 
 #[async_trait]
 pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
@@ -114,8 +120,13 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         Ok(s)
     }
 
-    #[cfg(feature = "query_builder")]
-    fn select(id: Option<String>) -> Query<TableQuery, NoFieldsQuery, NoFilterQuery> {
-        Query::new().from(Self::table_name(), id)
+    #[cfg(feature = "query")]
+    fn select<C: Connection>(id: Option<String>, db: &Surreal<C> ) -> SelectBuilder<FilledWhat, NoFields, C> {
+
+        if let Some(id) = id {
+            return db.select_builder().what(Thing::from((Self::table_name(), id)))
+        }
+
+        db.select_builder().what(Self::table_name())
     }
 }
