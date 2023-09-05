@@ -15,7 +15,7 @@ impl<C: Connection> StatementBuilder<C> for Surreal<C>
     fn select_builder(&self) -> SelectBuilder<NoWhat, NoFields, C> {
         SelectBuilder {
             statement: Default::default(),
-            db: &self,
+            db: self,
             what_state: PhantomData,
             fields_state: PhantomData,
         }

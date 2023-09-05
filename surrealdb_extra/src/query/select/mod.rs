@@ -24,8 +24,6 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!
-//!
 //!     let db = connect("mem://").await.unwrap();
 //!     db.use_ns("ns").use_db("db").await.unwrap();
 //!
@@ -91,11 +89,12 @@ impl<'r, C> SelectBuilder<'r, NoWhat, NoFields, C>
     /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// async {
+    /// #[tokio::main]
+    /// async fn main() {
     ///     let db = connect("mem://").await.unwrap();
     ///     SelectBuilder::new(&db).what("test").field("test"); // This becomes `SELECT test FROM test`
     ///
-    ///     SelectBuilder::new(&db).what(Thing::from(("test", "test"))).field("test") // This becomes `SELECT test FROM test:test`
+    ///     SelectBuilder::new(&db).what(Thing::from(("test", "test"))).field("test"); // This becomes `SELECT test FROM test:test`
     /// }
     /// ```
     ///
@@ -125,7 +124,8 @@ impl<'r, F, C> SelectBuilder<'r, FilledWhat, F, C>
     /// use surrealdb::sql::Field;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// async {
+    /// #[tokio::main]
+    /// async fn main() {
     ///     let db = connect("mem://").await.unwrap();
     ///     SelectBuilder::new(&db).what("test").field(Field::All); // This becomes `SELECT * FROM test`
     ///
@@ -247,7 +247,8 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     /// use surrealdb_extra::query::parsing::order::OrderDirection;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// async {
+    /// #[tokio::main]
+    /// async fn main() {
     ///     let db = connect("mem://").await.unwrap();
     ///     SelectBuilder::new(&db).what("test").field("test").order(("test", OrderDirection::ASC)); // This becomes `SELECT test FROM test ORDER BY test ASC`
     ///
@@ -284,7 +285,8 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     /// use surrealdb::engine::any::connect;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// async {
+    /// #[tokio::main]
+    /// async fn main() {
     ///     let db = connect("mem://").await.unwrap();
     ///     SelectBuilder::new(&db).what("test").field("test").limit(5); // This becomes `SELECT test FROM test LIMIT 5`
     /// }
@@ -312,7 +314,8 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     /// use surrealdb::engine::any::connect;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// async {
+    /// #[tokio::main]
+    /// async fn main() {
     ///     let db = connect("mem://").await.unwrap();
     ///     SelectBuilder::new(&db).what("test").field("test").start(5); // This becomes `SELECT test FROM test START 5`
     /// }
