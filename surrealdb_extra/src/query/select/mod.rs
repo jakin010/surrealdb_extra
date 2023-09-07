@@ -389,6 +389,19 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    pub fn only(self) -> Self {
+        let Self { mut statement, db, .. } = self;
+
+        statement.only = true;
+
+        Self {
+            statement,
+            db,
+            what_state: Default::default(),
+            fields_state: Default::default(),
+        }
+    }
+
     pub fn parallel(self) -> Self {
         let Self { mut statement, db, .. } = self;
 
