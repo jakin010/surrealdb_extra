@@ -1,5 +1,6 @@
 use surrealdb::sql::{Idiom};
 
+#[derive(Debug, Clone)]
 pub struct ExtraOmit(pub Idiom);
 
 impl From<Idiom> for ExtraOmit {

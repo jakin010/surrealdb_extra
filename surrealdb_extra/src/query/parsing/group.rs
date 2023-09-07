@@ -1,6 +1,7 @@
 use surrealdb::sql::{Group, Idiom};
 use crate::query::parsing::idiom::ExtraIdiom;
 
+#[derive(Debug, Clone)]
 pub struct ExtraGroup(pub Group);
 
 impl From<Group> for ExtraGroup {

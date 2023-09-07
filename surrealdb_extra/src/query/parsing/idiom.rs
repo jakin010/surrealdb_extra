@@ -1,6 +1,7 @@
 use rayon::prelude::*;
 use surrealdb::sql::{Idiom, Part};
 
+#[derive(Debug, Clone)]
 pub struct ExtraIdiom(pub Idiom);
 
 impl From<Idiom> for ExtraIdiom {

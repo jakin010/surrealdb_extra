@@ -1,6 +1,7 @@
 use surrealdb::sql::{Fetch, Idiom};
 use crate::query::parsing::idiom::ExtraIdiom;
 
+#[derive(Debug, Clone)]
 pub struct ExtraFetch(pub Fetch);
 
 impl From<Fetch> for ExtraFetch {

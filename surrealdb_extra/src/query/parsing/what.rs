@@ -1,5 +1,6 @@
 use surrealdb::sql::{Table, Thing, Value, Values};
 
+#[derive(Debug, Clone)]
 pub struct ExtraValue(pub Values);
 
 impl From<Values> for ExtraValue {

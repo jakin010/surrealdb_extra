@@ -36,7 +36,7 @@
 //! # For binding first convert the builder to a `Query<>` type and do binding as usual
 //!
 //! ## Click on the struct for more info
-//! 
+//!
 //! ## Their is only 1 missing function which is with because the `With` enum is not made public
 
 pub(crate) mod states;
@@ -183,6 +183,8 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+
+    /// This function 
     /// You can also use the Cond/Value type inside surrealdb for more complex requests
     pub fn condition(self, cond: impl Into<ExtraCond>) -> Self {
         let Self { mut statement, db, .. } = self;

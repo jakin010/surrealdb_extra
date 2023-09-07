@@ -1,5 +1,6 @@
 use surrealdb::sql::{Number, Start, Value};
 
+#[derive(Debug, Clone)]
 pub struct ExtraStart(pub Start);
 
 impl From<Start> for ExtraStart {

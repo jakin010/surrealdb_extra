@@ -1,6 +1,7 @@
 use surrealdb::sql::{Idiom, Split};
 use crate::query::parsing::idiom::ExtraIdiom;
 
+#[derive(Debug, Clone)]
 pub struct ExtraSplit(pub Split);
 
 impl From<Split> for ExtraSplit {

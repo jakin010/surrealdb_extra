@@ -15,6 +15,7 @@ impl OrderDirection {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ExtraOrder(pub Order);
 
 impl From<Order> for ExtraOrder {

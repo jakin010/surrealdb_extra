@@ -1,5 +1,6 @@
 use surrealdb::sql::{Limit, Number, Value};
 
+#[derive(Debug, Clone)]
 pub struct ExtraLimit(pub Limit);
 
 impl From<Limit> for ExtraLimit {

@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use surrealdb::sql::Version;
 
+#[derive(Debug, Clone)]
 pub struct ExtraVersion(pub Version);
 
 impl From<Version> for ExtraVersion {

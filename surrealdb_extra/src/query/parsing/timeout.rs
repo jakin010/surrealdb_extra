@@ -1,6 +1,7 @@
 use std::time;
 use surrealdb::sql::Timeout;
 
+#[derive(Debug, Clone)]
 pub struct ExtraTimeout(pub Timeout);
 
 impl From<Timeout> for ExtraTimeout {
