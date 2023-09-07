@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use surrealdb::sql::{Cond, Value, Expression, Idiom, Operator};
 
 use super::idiom::ExtraIdiom;
@@ -152,19 +153,30 @@ impl From<Vec<Condition>> for ExtraCond {
 
         expr = Expression::Binary { l: l_val, o: o_oparator, r: r_val };
 
-        for v in value.windows(2) {
+        value.into_iter().collect_tuple().map(|(o, v)| {
+            let oparator = o.to_oparator();
+            let value = v.to_value();
 
-            let oparator = &v[0];
+            expr = Expression::Binary { 
+                l: Value::Expression(expr.clone().into()), 
+                o: oparator, 
+                r: value 
+            }
+
+        });
+        // for (o, v) in value.into_iter().collect_tuple() {
+
+        
             
-            // let value = match v {
-            //     Condition::Field(k) => { }
-            //     Condition::FieldValue(k, o, v) => {}
-            //     Condition::Operator(o) => { }
-            //     Condition::OperatorField(o, k) => {} 
-            // };
+        //     // let value = match v {
+        //     //     Condition::Field(k) => { }
+        //     //     Condition::FieldValue(k, o, v) => {}
+        //     //     Condition::Operator(o) => { }
+        //     //     Condition::OperatorField(o, k) => {} 
+        //     // };
 
-            break;
-        }
+        //     break;
+        // }
         
         dbg!(&expr);
 
@@ -199,9 +211,11 @@ mod test {
 
     #[test]
     fn from_condition() {
-        let cond = Condition::Field(Value::Idiom(ExtraIdiom::from("value").0));
+        let cond1 = Condition::Field(Value::Idiom(ExtraIdiom::from("test").0));
+        let cond2 = Condition::Operator(Operator::And);
+        let cond3 = Condition::Field(Value::Idiom(ExtraIdiom::from("test").0));
 
-        let vec_cond = vec![cond];
+        let vec_cond = vec![cond1, cond2, cond3];
 
         let _extra_cond = ExtraCond::from(vec_cond);
     }
