@@ -184,7 +184,43 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     }
 
 
-    /// This function 
+    /// This function is for `WHERE`
+    ///
+    /// Example:
+    /// ```rust
+    /// use surrealdb::engine::any::connect;
+    /// use surrealdb::sql::Operator;
+    /// use surrealdb_extra::cond_vec;
+    /// use surrealdb_extra::query::parsing::cond::Condition;
+    /// use surrealdb_extra::query::select::SelectBuilder;
+    /// 
+    /// #[tokio::main]
+    /// async fn main() {
+    ///
+    ///     let db = connect("mem://").await.unwrap();
+    ///     SelectBuilder::new(&db).what("test").field("test").condition("test");
+    ///     // The above builder becomes `SELECT test FROM test WHERE test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field("test").condition((Operator::Not, "test"));
+    ///     // The above builder becomes `SELECT test FROM test WHERE !test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", Operator::MoreThan, "$test"));
+    ///     // The above builder becomes `SELECT test FROM test WHERE test > $test`
+    ///
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", Operator::Equal, "$test"));
+    ///     // The above builder becomes `SELECT test FROM test WHERE test = $test`
+    ///
+    ///     // For multiple conditions the vector `cond_vec![]` is recommended for usage
+    ///     SelectBuilder::new(&db).what("test").field("test")
+    ///     .condition(cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test")]);
+    ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
+    ///
+    ///     // Other method of using the multi conditions
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
+    ///     // The above builder becomes `SELECT test FROM test WHERE test AND name <= $name`
+    ///
+    /// }
+    /// ```
     /// You can also use the Cond/Value type inside surrealdb for more complex requests
     pub fn condition(self, cond: impl Into<ExtraCond>) -> Self {
         let Self { mut statement, db, .. } = self;
