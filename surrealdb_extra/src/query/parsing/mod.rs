@@ -15,17 +15,11 @@ pub mod version;
 pub mod timeout;
 
 pub fn str_to_value(val: impl Into<String>) -> Value {
-    let val = value(&val.into()).unwrap_or_default();
+    let Ok(val) = value(&val.into()) else {
+        return Value::Null;
+    };
 
-    if let Value::Idiom(..) = val {
-        return val;
-    }
-
-    if let Value::Param(..) = val {
-        return val;
-    }
-
-    Value::Null
+    val
 }
 
 #[cfg(test)]
@@ -80,5 +74,23 @@ mod test {
         let val = str_to_value(i);
 
         assert!(!matches!(val, Value::Idiom(..)))
+    }
+    
+    #[test]
+    fn is_func() {
+        let i = "type::thing($tb, $id)";
+
+        let val = str_to_value(i);
+
+        assert!(matches!(val, Value::Function(..)))
+    }
+    
+    #[test]
+    fn is_not_func() {
+        let i = "id";
+
+        let val = str_to_value(i);
+
+        assert!(!matches!(val, Value::Function(..)))
     }
 }
