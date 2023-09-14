@@ -6,7 +6,7 @@ Surrealdb-extra is a crate that provides additional functionality and utilities 
 This crate extends the capabilities of SurrealDB crate by introducing additional features such as a query builder and table trait, which simplify the process of constructing and executing database queries. The query builder allows you to dynamically construct queries with support for field selection, filtering, and result limiting. The table trait provides a convenient way to define database tables and perform common operations such as create, read, update, and delete (CRUD) operations.
 
 Key Features:
-- Query Builder: Construct and execute database queries with ease, including field selection, filtering, and result limiting.
+- Query Builder: Construct and execute database queries with ease, including field selection, filtering, result limiting and more.
 - Table Trait: Define database tables and perform CRUD operations with a simple and intuitive interface.
 
 
