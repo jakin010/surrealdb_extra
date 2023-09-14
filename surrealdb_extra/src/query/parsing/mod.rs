@@ -13,13 +13,13 @@ pub mod order;
 pub mod fetch;
 pub mod version;
 pub mod timeout;
+pub mod with;
 
 pub fn str_to_value(val: impl Into<String>) -> Value {
-    let Ok(val) = value(&val.into()) else {
-        return Value::Null;
-    };
-
-    val
+    match value(&val.into()) {
+        Ok(v) => v,
+        Err(_) => Value::Null
+    }
 }
 
 #[cfg(test)]
@@ -75,7 +75,7 @@ mod test {
 
         assert!(!matches!(val, Value::Idiom(..)))
     }
-    
+
     #[test]
     fn is_func() {
         let i = "type::thing($tb, $id)";
@@ -84,7 +84,7 @@ mod test {
 
         assert!(matches!(val, Value::Function(..)))
     }
-    
+
     #[test]
     fn is_not_func() {
         let i = "id";

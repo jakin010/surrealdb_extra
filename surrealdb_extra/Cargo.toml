@@ -28,6 +28,7 @@ query = ["derive"]
 derive = ["table"]
 
 [dev-dependencies]
+serde_with = "3.3.0"
 surrealdb = { version = "1.0.0", features = ["kv-mem"] }
 tokio = { version = "1.28.1", features = ["macros"] }
 

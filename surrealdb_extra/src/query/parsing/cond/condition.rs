@@ -192,10 +192,10 @@ impl From<(Value, Operator, String)> for Condition {
 #[macro_export]
 macro_rules! cond_vec {
     () => (
-        std::vec::Vec::<$crate::query::parsing::cond::Condition>::new()
+        std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::new()
     );
     ($($x:expr),+ $(,)?) => (
-        Vec::<Condition>::from([$($crate::query::parsing::cond::Condition::from($x)),+])
+        std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::from([$($crate::query::parsing::cond::Condition::from($x)),+])
     );
 }
 

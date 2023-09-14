@@ -12,7 +12,6 @@ use surrealdb::Surreal;
 use tokio::runtime::Runtime;
 use surrealdb_extra::cond_vec;
 use surrealdb_extra::query::statement::StatementBuilder;
-use surrealdb_extra::query::parsing::cond::Condition;
 use surrealdb_extra::query::parsing::order::OrderDirection;
 use surrealdb_extra::table::Table;
 
@@ -133,7 +132,7 @@ fn select_builder_with_more_options_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::table_name()).field(Field::All).limit(5).start(1).order(("test", OrderDirection::DESC)).to_query();
+                    let _select = db.select_builder().what(Test::table_name()).field(Field::All).limit(5).start(1).order(("test", OrderDirection::DESC)).order(("test", OrderDirection::ASC)).to_query();
                 }
                 start.elapsed()
             })
@@ -151,7 +150,7 @@ fn query_with_more_options_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _query = db.query("SELECT * FROM test LIMIT 5 START 2 ORDER BY test DESC");
+                    let _query = db.query("SELECT * FROM test LIMIT 5 START 2 ORDER BY test DESC, test ASC");
                 }
                 start.elapsed()
             })

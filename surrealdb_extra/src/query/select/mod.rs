@@ -58,6 +58,7 @@ use crate::query::parsing::start::ExtraStart;
 use crate::query::parsing::timeout::ExtraTimeout;
 use crate::query::parsing::version::ExtraVersion;
 use crate::query::parsing::what::ExtraValue;
+use crate::query::parsing::with::ExtraWith;
 use crate::query::select::states::{FilledFields, FilledWhat, NoFields, NoWhat};
 
 #[derive(Debug, Clone)]
@@ -183,6 +184,19 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
         }
     }
 
+    /// You can also use the With type inside surrealdb for more complex requests
+    pub fn with(self, with: impl Into<ExtraWith>) -> Self {
+        let Self { mut statement, db, .. } = self;
+
+        statement.with = Some(with.into().0);
+
+        Self {
+            statement,
+            db,
+            what_state: Default::default(),
+            fields_state: Default::default(),
+        }
+    }
 
     /// This function is for `WHERE`
     ///
@@ -193,7 +207,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     /// use surrealdb_extra::cond_vec;
     /// use surrealdb_extra::query::parsing::cond::Condition;
     /// use surrealdb_extra::query::select::SelectBuilder;
-    /// 
+    ///
     /// #[tokio::main]
     /// async fn main() {
     ///

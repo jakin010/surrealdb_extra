@@ -4,7 +4,6 @@ mod condition;
 
 use std::collections::VecDeque;
 use itertools::Itertools;
-use rayon::prelude::*;
 use surrealdb::sql::{Cond, Value, Expression, Operator};
 use crate::query::parsing::str_to_value;
 pub use super::cond::condition::Condition;
@@ -164,30 +163,21 @@ impl From<Vec<Condition>> for ExtraCond {
 
         expr = Expression::Binary { l, o, r };
 
-        // for _ in 0..value.len()/2 {
-        //     let o = value.pop_front().unwrap_or_default();
-        //     let o = o.to_operator();
-        //
-        //     let v = value.pop_front().unwrap_or_default();
-        //     let v = v.to_value();
-        //
-        //     expr = Expression::Binary {
-        //         l: Value::Expression(expr.into()),
-        //         o,
-        //         r: v
-        //     }
-        // }
+        let val_len = value.len()/2;
 
-        // for (o, v) in value.into_iter().tuple_windows() {
-        //     let o = o.to_operator();
-        //     let value = v.to_value();
-        //
-        //     expr = Expression::Binary {
-        //         l: Value::Expression(Box::new(expr)),
-        //         o,
-        //         r: value
-        //     }
-        // }
+        for _ in 0..val_len {
+            let o = value.pop_front().unwrap_or_default();
+            let o = o.to_operator();
+
+            let v = value.pop_front().unwrap_or_default();
+            let v = v.to_value();
+
+            expr = Expression::Binary {
+                l: Value::Expression(expr.into()),
+                o,
+                r: v
+            };
+        }
 
         value.into_iter().collect_tuple().map(|(o, v)| {
             let o = o.to_operator();
@@ -200,9 +190,45 @@ impl From<Vec<Condition>> for ExtraCond {
             }
         });
 
-        // value.into_par_iter().map(|_| {
-        //
-        // });
+        Self(Cond(Value::Expression(Box::new(expr))))
+    }
+}
+
+impl From<VecDeque<Condition>> for ExtraCond {
+    fn from(mut value: VecDeque<Condition>) -> Self {
+        if value.is_empty() {
+            return Self(Cond(Value::Null))
+        }
+
+        #[allow(dead_code, unused_assignments)]
+        let mut expr = Expression::default();
+
+        let l = value.pop_front().unwrap_or_default();
+        let l = l.to_value();
+
+        let o = value.pop_front().unwrap_or_default();
+        let o = o.to_operator();
+
+        let r = value.pop_front().unwrap_or_default();
+        let r = r.to_value();
+
+        expr = Expression::Binary { l, o, r };
+
+        let val_len = value.len()/2;
+
+        for _ in 0..val_len {
+            let o = value.pop_front().unwrap_or_default();
+            let o = o.to_operator();
+
+            let v = value.pop_front().unwrap_or_default();
+            let v = v.to_value();
+
+            expr = Expression::Binary {
+                l: Value::Expression(expr.into()),
+                o,
+                r: v
+            };
+        }
 
         Self(Cond(Value::Expression(Box::new(expr))))
     }
@@ -304,7 +330,15 @@ mod test {
         let select = db.select_builder().what(Test::table_name()).field(Field::All).condition(cond_vec![
             ("name", Operator::Equal, "$name"),
                 Operator::And,
-            ("n", Operator::MoreThan, "$n")
+            ("n", Operator::MoreThan, "$n"),
+                Operator::And,
+            ("n", Operator::MoreThan, "$n"),
+                Operator::And,
+            ("n", Operator::MoreThan, "$n"),
+                Operator::And,
+            ("n", Operator::MoreThan, "$n"),
+                Operator::And,
+            ("n", Operator::MoreThan, "$n"),
         ]).to_query()
             .bind(("name", "test"))
             .bind(("n", 3));

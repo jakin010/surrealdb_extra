@@ -106,6 +106,23 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         Ok(s)
     }
 
+    /// This function works best with 'serde_with::skip_serializing_none' reason is so that if the option value none does not override the database if filled
+    /// Of course using 'serde_with::skip_serializing_none' is optional
+    ///
+    /// Example:
+    /// ```rust
+    /// use serde::{Deserialize, Serialize};
+    /// use serde_with::skip_serializing_none;
+    /// use surrealdb::sql::Thing;
+    /// use surrealdb_extra::table::Table;
+    ///
+    /// #[skip_serializing_none]
+    /// #[derive(Debug, Table, Serialize, Deserialize)]
+    /// #[table(name = "test")]
+    /// struct Test {
+    ///     id: Option<Thing>,
+    /// }
+    /// ```
     async fn update<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
         let s: Option<Self> = db
             .update(
