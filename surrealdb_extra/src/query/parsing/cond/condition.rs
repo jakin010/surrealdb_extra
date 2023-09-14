@@ -1,8 +1,11 @@
 use surrealdb::sql::{Expression, Operator, Value};
 use crate::query::parsing::str_to_value;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum Condition {
+    #[default]
+    Null,
+
     Value(Value),
     ValOpVal(Value, Operator, Value),
     OperatorValue(Operator, Value),
@@ -24,6 +27,7 @@ impl Condition {
                     Expression::Unary { o, v }.into()
                 )
             }
+            _ => { Value::Null }
         }
     }
 
@@ -33,6 +37,7 @@ impl Condition {
             Condition::ValOpVal(_, _, _) => { Operator::default() }
             Condition::Operator(o) => { o }
             Condition::OperatorValue(_, _) => { Operator::default() }
+            _ => { Operator::default() }
         }
     }
 }

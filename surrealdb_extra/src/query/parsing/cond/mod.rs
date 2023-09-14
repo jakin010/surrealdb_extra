@@ -2,7 +2,9 @@
 
 mod condition;
 
+use std::collections::VecDeque;
 use itertools::Itertools;
+use rayon::prelude::*;
 use surrealdb::sql::{Cond, Value, Expression, Operator};
 use crate::query::parsing::str_to_value;
 pub use super::cond::condition::Condition;
@@ -141,24 +143,51 @@ impl From<(Value, Operator, String)> for ExtraCond {
 }
 
 impl From<Vec<Condition>> for ExtraCond {
-    fn from(mut value: Vec<Condition>) -> Self {
+    fn from(value: Vec<Condition>) -> Self {
         if value.is_empty() {
             return Self(Cond(Value::Null))
         }
 
+        let mut value: VecDeque<Condition> = value.into();
+
         #[allow(dead_code, unused_assignments)]
         let mut expr = Expression::default();
 
-        let l = value.remove(0);
+        let l = value.pop_front().unwrap_or_default();
         let l = l.to_value();
 
-        let o = value.remove(0);
+        let o = value.pop_front().unwrap_or_default();
         let o = o.to_operator();
 
-        let r = value.remove(0);
+        let r = value.pop_front().unwrap_or_default();
         let r = r.to_value();
 
         expr = Expression::Binary { l, o, r };
+
+        // for _ in 0..value.len()/2 {
+        //     let o = value.pop_front().unwrap_or_default();
+        //     let o = o.to_operator();
+        //
+        //     let v = value.pop_front().unwrap_or_default();
+        //     let v = v.to_value();
+        //
+        //     expr = Expression::Binary {
+        //         l: Value::Expression(expr.into()),
+        //         o,
+        //         r: v
+        //     }
+        // }
+
+        // for (o, v) in value.into_iter().tuple_windows() {
+        //     let o = o.to_operator();
+        //     let value = v.to_value();
+        //
+        //     expr = Expression::Binary {
+        //         l: Value::Expression(Box::new(expr)),
+        //         o,
+        //         r: value
+        //     }
+        // }
 
         value.into_iter().collect_tuple().map(|(o, v)| {
             let o = o.to_operator();
@@ -170,6 +199,10 @@ impl From<Vec<Condition>> for ExtraCond {
                 r: value
             }
         });
+
+        // value.into_par_iter().map(|_| {
+        //
+        // });
 
         Self(Cond(Value::Expression(Box::new(expr))))
     }

@@ -3,5 +3,6 @@ resolver = "2"
 members = [
     "surrealdb_extra",
     "surrealdb_extra_derive",
-    "surrealdb_extra_tests"
+    "surrealdb_extra_tests",
+    "surrealdb_extra_bench",
 ]
