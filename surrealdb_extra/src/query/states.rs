@@ -12,3 +12,10 @@ pub struct NoFields;
 #[derive(Debug)]
 pub struct FilledFields;
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct NoData;
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct FilledData;
+

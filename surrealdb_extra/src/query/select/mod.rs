@@ -39,7 +39,6 @@
 //!
 //! ## Their is only 1 missing function which is with because the `With` enum is not made public
 
-pub(crate) mod states;
 
 use std::marker::PhantomData;
 use surrealdb::{Connection, Surreal};
@@ -59,13 +58,13 @@ use crate::query::parsing::timeout::ExtraTimeout;
 use crate::query::parsing::version::ExtraVersion;
 use crate::query::parsing::what::ExtraValue;
 use crate::query::parsing::with::ExtraWith;
-use crate::query::select::states::{FilledFields, FilledWhat, NoFields, NoWhat};
+use crate::query::states::{FilledFields, FilledWhat, NoFields, NoWhat};
 
 #[derive(Debug, Clone)]
 pub struct SelectBuilder<'r, T, F, C>
     where C: Connection
 {
-    pub(crate) statement: SelectStatement,
+    pub statement: SelectStatement,
     pub(crate) db: &'r Surreal<C>,
     pub(crate) what_state: PhantomData<T>,
     pub(crate) fields_state: PhantomData<F>,

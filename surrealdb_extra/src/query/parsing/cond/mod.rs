@@ -3,7 +3,6 @@
 mod condition;
 
 use std::collections::VecDeque;
-use itertools::Itertools;
 use surrealdb::sql::{Cond, Value, Expression, Operator};
 use crate::query::parsing::str_to_value;
 pub use super::cond::condition::Condition;
@@ -179,16 +178,19 @@ impl From<Vec<Condition>> for ExtraCond {
             };
         }
 
-        value.into_iter().collect_tuple().map(|(o, v)| {
+        for _ in 0..val_len {
+            let o = value.pop_front().unwrap_or_default();
             let o = o.to_operator();
-            let value = v.to_value();
+
+            let v = value.pop_front().unwrap_or_default();
+            let v = v.to_value();
 
             expr = Expression::Binary {
-                l: Value::Expression(expr.clone().into()),
+                l: Value::Expression(expr.into()),
                 o,
-                r: value
-            }
-        });
+                r: v
+            };
+        }
 
         Self(Cond(Value::Expression(Box::new(expr))))
     }

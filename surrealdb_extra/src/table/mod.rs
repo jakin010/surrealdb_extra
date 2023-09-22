@@ -69,7 +69,7 @@ use surrealdb::sql::Thing;
 #[cfg(feature = "query")]
 use crate::query::select::SelectBuilder;
 #[cfg(feature = "query")]
-use crate::query::select::states::{FilledWhat, NoFields};
+use crate::query::states::{FilledWhat, NoFields};
 #[cfg(feature = "query")]
 use crate::query::statement::StatementBuilder;
 
