@@ -41,9 +41,9 @@ impl<'r, C> UpdateBuilder<'r, NoWhat, C>
     /// #[tokio::main]
     /// async fn main() {
     ///     let db = connect("mem://").await.unwrap();
-    ///     UpdateBuilder::new(&db).what("test").field("test"); // This becomes `SELECT test FROM test`
+    ///     UpdateBuilder::new(&db).what("test");
     ///
-    ///     UpdateBuilder::new(&db).what(Thing::from(("test", "test"))).field("test"); // This becomes `SELECT test FROM test:test`
+    ///     UpdateBuilder::new(&db).what(Thing::from(("test", "test")));
     /// }
     /// ```
     ///

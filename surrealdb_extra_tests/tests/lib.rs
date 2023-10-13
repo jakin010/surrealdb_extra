@@ -24,7 +24,7 @@ async fn database() -> Surreal<Db> {
 
 #[test]
 fn table_derive_init() {
-    assert_eq!("test_test", Test::table_name())
+    assert_eq!("test_test", Test::TABLE_NAME)
 }
 
 #[test]
@@ -162,7 +162,7 @@ async fn select_field() {
     let tc = t.create(&db).await.unwrap();
     let tc = tc.first().unwrap().clone();
 
-    let mut q = db.select_builder().what(Test::table_name()).field("name").to_query().await.unwrap();
+    let mut q = db.select_builder().what(Test::TABLE_NAME).field("name").to_query().await.unwrap();
 
     let res: Vec<Test> = q.take(0).unwrap();
 
@@ -187,7 +187,7 @@ async fn select_id_name_not_selected_error() {
 
     let _tc = t.create(&db).await.unwrap();
 
-    let mut q = db.select_builder().what(Test::table_name()).field("id").to_query().await.unwrap();
+    let mut q = db.select_builder().what(Test::TABLE_NAME).field("id").to_query().await.unwrap();
 
     let res: Result<Vec<Test>, Error> = q.take(0);
 
@@ -207,7 +207,7 @@ async fn select_id_name_selected_success() {
     let tc = t.create(&db).await.unwrap();
     let tc = tc.first().unwrap().clone();
 
-    let mut q = db.select_builder().what(Test::table_name()).field("id").field("name").to_query().await.unwrap();
+    let mut q = db.select_builder().what(Test::TABLE_NAME).field("id").field("name").to_query().await.unwrap();
 
     let res: Vec<Test> = q.take(0).unwrap();
 

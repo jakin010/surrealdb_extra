@@ -1,4 +1,3 @@
-use rayon::prelude::*;
 use surrealdb::sql::{Field, Fields, Output, Value};
 use crate::query::parsing::field::ExtraField;
 

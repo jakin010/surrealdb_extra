@@ -76,6 +76,9 @@ use crate::query::statement::StatementBuilder;
 #[async_trait]
 pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 {
+    const TABLE_NAME: &'static str;
+
+    #[deprecated(since="0.5.0", note="Use `TABLE_NAME` instead")]
     fn table_name() -> String;
 
     fn get_id(&self) -> &Option<::surrealdb::sql::Thing>;
@@ -83,25 +86,25 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     fn set_id(&mut self, id: impl Into<::surrealdb::sql::Thing>);
 
     async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>, TableError> {
-        let s: Vec<Self> = db.create(Self::table_name()).content(self).await.map_err(TableError::Db)?;
+        let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await.map_err(TableError::Db)?;
 
         Ok(s)
     }
 
     async fn delete<C: Connection>(id: impl Into<String> + std::marker::Send, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
-        let s: Option<Self> = db.delete((Self::table_name(), id.into())).await.map_err(TableError::Db)?;
+        let s: Option<Self> = db.delete((Self::TABLE_NAME, id.into())).await.map_err(TableError::Db)?;
 
         Ok(s)
     }
 
     async fn get_all<C: Connection>(db: &Surreal<C>) -> Result<Vec<Self>, TableError> {
-        let vec_s: Vec<Self> = db.select(Self::table_name()).await.map_err(TableError::Db)?;
+        let vec_s: Vec<Self> = db.select(Self::TABLE_NAME).await.map_err(TableError::Db)?;
 
         Ok(vec_s)
     }
 
     async fn get_by_id<C: Connection>(id: impl Into<String> + std::marker::Send, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
-        let s: Option<Self> = db.select((Self::table_name(), id.into())).await.map_err(TableError::Db)?;
+        let s: Option<Self> = db.select((Self::TABLE_NAME, id.into())).await.map_err(TableError::Db)?;
 
         Ok(s)
     }
@@ -127,7 +130,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         let s: Option<Self> = db
             .update(
                 (
-                    Self::table_name(),
+                    Self::TABLE_NAME,
                     self.get_id().clone().ok_or(TableError::IdEmpty)?.id.clone().to_raw()
                 )
             )
@@ -141,9 +144,9 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     fn select<C: Connection>(id: Option<String>, db: &Surreal<C> ) -> SelectBuilder<FilledWhat, NoFields, C> {
 
         if let Some(id) = id {
-            return db.select_builder().what(Thing::from((Self::table_name(), id)))
+            return db.select_builder().what(Thing::from((Self::TABLE_NAME.to_string(), id)))
         }
 
-        db.select_builder().what(Self::table_name())
+        db.select_builder().what(Self::TABLE_NAME)
     }
 }

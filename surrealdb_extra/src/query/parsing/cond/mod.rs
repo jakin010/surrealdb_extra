@@ -292,7 +292,7 @@ mod test {
 
         assert_eq!(vec1_t.len(), 1);
 
-        let select = db.select_builder().what(Test::table_name()).field("name").field("n").condition(("n", Operator::MoreThan, "$num")).to_query().bind(("num", 9));
+        let select = db.select_builder().what(Test::TABLE_NAME).field("name").field("n").condition(("n", Operator::MoreThan, "$num")).to_query().bind(("num", 9));
         let mut select_res = select.await.unwrap();
         let vec2_t: Vec<Test> = select_res.take(0).unwrap();
 
@@ -329,7 +329,7 @@ mod test {
         let _ = t2.clone().create(&db).await.unwrap();
         let _ = t3.clone().create(&db).await.unwrap();
 
-        let select = db.select_builder().what(Test::table_name()).field(Field::All).condition(cond_vec![
+        let select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
             ("name", Operator::Equal, "$name"),
                 Operator::And,
             ("n", Operator::MoreThan, "$n"),

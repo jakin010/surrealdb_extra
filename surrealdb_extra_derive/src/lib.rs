@@ -17,6 +17,8 @@ pub fn table(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl Table for #struct_name {
+            const TABLE_NAME: &'static str = #table_name;
+
             fn table_name() -> String {
                 #table_name.to_string()
             }

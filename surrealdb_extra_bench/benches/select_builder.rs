@@ -42,7 +42,7 @@ fn select_builder_with_cond_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::table_name()).field(Field::All).condition(cond_vec![
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
                             ("name", Operator::Equal, "$name"),
                                 Operator::And,
                             ("n", Operator::MoreThan, "$n"),
@@ -95,7 +95,7 @@ fn select_builder_without_cond_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::table_name()).field(Field::All).to_query();
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).to_query();
                 }
                 start.elapsed()
             })
@@ -132,7 +132,7 @@ fn select_builder_with_more_options_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::table_name()).field(Field::All).limit(5).start(1).order(("test", OrderDirection::DESC)).order(("test", OrderDirection::ASC)).to_query();
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).limit(5).start(1).order(("test", OrderDirection::DESC)).order(("test", OrderDirection::ASC)).to_query();
                 }
                 start.elapsed()
             })
