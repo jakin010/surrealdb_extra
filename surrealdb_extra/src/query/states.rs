@@ -14,8 +14,8 @@ pub struct FilledFields;
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct NoData;
+pub struct NoRelation;
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct FilledData;
+pub struct FilledRelation;
 

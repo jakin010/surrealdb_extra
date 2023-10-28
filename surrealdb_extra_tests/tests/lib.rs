@@ -44,9 +44,9 @@ fn table_derive_set_id() {
         ..Test::default()
     };
 
-    t.set_id(Thing::from(("test", "test")));
+    t.set_id("test");
 
-    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test", "test")))
+    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test_test", "test")))
 }
 
 #[tokio::test]

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 use surrealdb::{Connection, Surreal};
+use crate::query::relate::RelateBuilder;
 use crate::query::select::SelectBuilder;
-use crate::query::states::{NoFields, NoWhat};
+use crate::query::states::{NoFields, NoRelation, NoWhat};
 use crate::query::update::UpdateBuilder;
 
 pub trait StatementBuilder<C>
@@ -9,6 +10,8 @@ pub trait StatementBuilder<C>
 {
     fn select_builder(&self) -> SelectBuilder<NoWhat, NoFields, C>;
     fn update_builder(&self) -> UpdateBuilder<NoWhat, C>;
+
+    fn relate_builder(&self) -> RelateBuilder<NoRelation, C>;
 }
 
 impl<C: Connection> StatementBuilder<C> for Surreal<C>
@@ -28,6 +31,15 @@ impl<C: Connection> StatementBuilder<C> for Surreal<C>
             statement: Default::default(),
             db: self,
             what_state: PhantomData,
+        }
+    }
+
+    fn relate_builder(&self) -> RelateBuilder<
+    NoRelation, C> {
+        RelateBuilder {
+            statement: Default::default(),
+            db: self,
+            relate_state: PhantomData,
         }
     }
 }
@@ -59,5 +71,16 @@ mod test {
         let update_type_id = update_builder.db.type_id();
 
         assert_eq!(db_type_id, update_type_id);
+    }
+    #[tokio::test]
+    async fn relate_builder() {
+        let db = connect("mem://").await.unwrap();
+
+        let relate_builder = db.relate_builder();
+
+        let db_type_id = db.type_id();
+        let relate_type_id = relate_builder.db.type_id();
+
+        assert_eq!(db_type_id, relate_type_id);
     }
 }

@@ -16,6 +16,10 @@ pub mod timeout;
 pub mod with;
 pub mod data;
 pub mod output;
+pub mod set_expression;
+pub mod unset_expression;
+pub mod value;
+pub mod table;
 
 pub fn str_to_value(val: impl Into<String>) -> Value {
     match value(&val.into()) {

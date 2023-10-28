@@ -83,7 +83,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 
     fn get_id(&self) -> &Option<::surrealdb::sql::Thing>;
 
-    fn set_id(&mut self, id: impl Into<::surrealdb::sql::Thing>);
+    fn set_id(&mut self, id: impl Into<String>);
 
     async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>, TableError> {
         let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await.map_err(TableError::Db)?;

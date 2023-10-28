@@ -27,8 +27,8 @@ pub fn table(input: TokenStream) -> TokenStream {
                 &self.id
             }
 
-            fn set_id(&mut self, id: impl Into<::surrealdb::sql::Thing>) {
-                self.id = Some(id.into());
+            fn set_id(&mut self, id: impl Into<String>) {
+                self.id = Some(::surrealdb::sql::Thing::from((Self::TABLE_NAME.to_string(), id.into())));
             }
         }
     };
