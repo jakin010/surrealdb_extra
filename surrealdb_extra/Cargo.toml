@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb_extra"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Adds a orm and query builder on top of surrealdb"
@@ -11,7 +11,7 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.4.0", path = "../surrealdb_extra_derive" }
+surrealdb_extra_derive = { version = "0.5.0", path = "../surrealdb_extra_derive" }
 async-trait = "0.1.68"
 surrealdb = "1.0.0"
 serde = { version = "1.0.163", features = ["derive"] }
