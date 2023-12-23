@@ -36,9 +36,6 @@
 //! # For binding first convert the builder to a `Query<>` type and do binding as usual
 //!
 //! ## Click on the struct for more info
-//!
-//! ## Their is only 1 missing function which is with because the `With` enum is not made public
-
 
 use std::marker::PhantomData;
 use surrealdb::{Connection, Surreal};
@@ -58,27 +55,29 @@ use crate::query::parsing::timeout::ExtraTimeout;
 use crate::query::parsing::version::ExtraVersion;
 use crate::query::parsing::what::ExtraValue;
 use crate::query::parsing::with::ExtraWith;
-use crate::query::states::{FilledFields, FilledWhat, NoFields, NoWhat};
+use crate::query::states::{FilledCond, FilledFields, FilledWhat, NoCond, NoFields, NoWhat};
 
 #[derive(Debug, Clone)]
-pub struct SelectBuilder<'r, T, F, C>
-    where C: Connection
+pub struct SelectBuilder<'r, Client, W, F, C>
+    where Client: Connection
 {
     pub statement: SelectStatement,
-    pub(crate) db: &'r Surreal<C>,
-    pub(crate) what_state: PhantomData<T>,
+    pub(crate) db: &'r Surreal<Client>,
+    pub(crate) what_state: PhantomData<W>,
     pub(crate) fields_state: PhantomData<F>,
+    pub(crate) cond_state: PhantomData<C>,
 }
 
-impl<'r, C> SelectBuilder<'r, NoWhat, NoFields, C>
-    where C: Connection
+impl<'r, Client> SelectBuilder<'r, Client, NoWhat, NoFields, NoCond>
+    where Client: Connection
 {
-    pub fn new(db: &'r Surreal<C>) -> Self {
+    pub fn new(db: &'r Surreal<Client>) -> Self {
         Self {
             statement: Default::default(),
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -100,7 +99,7 @@ impl<'r, C> SelectBuilder<'r, NoWhat, NoFields, C>
     /// ```
     ///
     /// You can also use the Value type inside surrealdb for more complex requests
-    pub fn what(self, what: impl Into<ExtraValue>) -> SelectBuilder<'r, FilledWhat, NoFields, C> {
+    pub fn what(self, what: impl Into<ExtraValue>) -> SelectBuilder<'r, Client, FilledWhat, NoFields, NoCond> {
         let Self { mut statement, db, .. } = self;
 
         statement.what = what.into().0;
@@ -110,12 +109,13 @@ impl<'r, C> SelectBuilder<'r, NoWhat, NoFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 }
 
-impl<'r, F, C> SelectBuilder<'r, FilledWhat, F, C>
-    where C: Connection
+impl<'r, Client, F, C> SelectBuilder<'r, Client, FilledWhat, F, C>
+    where Client: Connection
 {
     /// This function selects the fields of a table with alias support or more
     ///
@@ -145,7 +145,7 @@ impl<'r, F, C> SelectBuilder<'r, FilledWhat, F, C>
     /// ```
     ///
     /// You can also use the Field type inside surrealdb for more complex requests
-    pub fn field(self, field: impl Into<ExtraField>) -> SelectBuilder<'r, FilledWhat, FilledFields, C> {
+    pub fn field(self, field: impl Into<ExtraField>) -> SelectBuilder<'r, Client, FilledWhat, FilledFields, C> {
         let Self { mut statement, db, .. } = self;
 
         let field = field.into().0;
@@ -156,47 +156,14 @@ impl<'r, F, C> SelectBuilder<'r, FilledWhat, F, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 }
 
-impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
-    where C: Connection
+impl<'r, Client> SelectBuilder<'r, Client, FilledWhat, FilledFields, NoCond>
+    where Client: Connection
 {
-    /// You can also use the Idiom type inside surrealdb for more complex requests
-    pub fn omit(self, omit: impl Into<ExtraOmit>) -> Self {
-        let Self { mut statement, db, .. } = self;
-
-        let mut omits = statement.omit.unwrap_or(
-            Idioms::default()
-        );
-
-        omits.0.push(omit.into().0);
-
-        statement.omit = Some(omits);
-
-        Self {
-            statement,
-            db,
-            what_state: Default::default(),
-            fields_state: Default::default(),
-        }
-    }
-
-    /// You can also use the With type inside surrealdb for more complex requests
-    pub fn with(self, with: impl Into<ExtraWith>) -> Self {
-        let Self { mut statement, db, .. } = self;
-
-        statement.with = Some(with.into().0);
-
-        Self {
-            statement,
-            db,
-            what_state: Default::default(),
-            fields_state: Default::default(),
-        }
-    }
-
     /// This function is for `WHERE`
     ///
     /// Example:
@@ -232,21 +199,71 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
     ///     SelectBuilder::new(&db).what("test").field("test").condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
     ///     // The above builder becomes `SELECT test FROM test WHERE test AND name <= $name`
     ///
+    ///     // For sub queries
+    ///     SelectBuilder::new(&db).what("test").field("test")
+    ///     .condition(cond_vec![
+    ///         ("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test"), Operator::And,
+    ///         cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2")]
+    ///     ]);
+    ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test AND (test1 = $test1 AND test2 = $test2)`
+    ///
     /// }
     /// ```
     /// You can also use the Cond/Value type inside surrealdb for more complex requests
-    pub fn condition(self, cond: impl Into<ExtraCond>) -> Self {
+    pub fn condition(self, cond: impl Into<ExtraCond>) -> SelectBuilder<'r, Client, FilledWhat, FilledFields, FilledCond> {
         let Self { mut statement, db, .. } = self;
 
         let cond = cond.into().0;
 
         statement.cond = Some(cond);
 
+        SelectBuilder {
+            statement,
+            db,
+            what_state: Default::default(),
+            fields_state: Default::default(),
+            cond_state: Default::default(),
+        }
+    }
+
+}
+
+impl<'r, Client, C> SelectBuilder<'r, Client, FilledWhat, FilledFields, C>
+    where Client: Connection
+{
+    /// You can also use the Idiom type inside surrealdb for more complex requests
+    pub fn omit(self, omit: impl Into<ExtraOmit>) -> Self {
+        let Self { mut statement, db, .. } = self;
+
+        let mut omits = statement.omit.unwrap_or(
+            Idioms::default()
+        );
+
+        omits.0.push(omit.into().0);
+
+        statement.omit = Some(omits);
+
         Self {
             statement,
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
+        }
+    }
+
+    /// You can also use the With type inside surrealdb for more complex requests
+    pub fn with(self, with: impl Into<ExtraWith>) -> Self {
+        let Self { mut statement, db, .. } = self;
+
+        statement.with = Some(with.into().0);
+
+        Self {
+            statement,
+            db,
+            what_state: Default::default(),
+            fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -267,6 +284,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -287,6 +305,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -327,6 +346,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -356,6 +376,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -385,6 +406,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -405,6 +427,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -421,6 +444,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -437,6 +461,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -450,6 +475,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -463,6 +489,7 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
@@ -476,11 +503,12 @@ impl<'r, C> SelectBuilder<'r, FilledWhat, FilledFields, C>
             db,
             what_state: Default::default(),
             fields_state: Default::default(),
+            cond_state: Default::default(),
         }
     }
 
     /// Converts the builder to query type
-    pub fn to_query(self) -> Query<'r, C> {
+    pub fn to_query(self) -> Query<'r, Client> {
         self.db.query(self.statement)
     }
 }
@@ -588,6 +616,22 @@ mod test {
         let db = db().await;
 
         let select = SelectBuilder::new(&db).what("test").field(field);
+
+        let query = select.statement.into_query();
+
+        assert!(query.is_ok())
+    }
+    #[tokio::test]
+    async fn select_field_with_cond() {
+
+        let field = Field::Single {
+            expr: Value::Idiom(Idiom::from("test".to_string())),
+            alias: None,
+        };
+
+        let db = db().await;
+
+        let select = SelectBuilder::new(&db).what("test").field(field).condition("test");
 
         let query = select.statement.into_query();
 

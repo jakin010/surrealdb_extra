@@ -1,4 +1,3 @@
-use rayon::prelude::*;
 use surrealdb::sql::{Idiom, Part};
 
 #[derive(Debug, Clone)]
@@ -13,7 +12,7 @@ impl From<Idiom> for ExtraIdiom {
 impl From<&str> for ExtraIdiom {
     fn from(value: &str) -> Self {
         let part: Vec<Part> = value
-            .par_split('.')
+            .split('.')
             .map(|x| Part::from(x))
             .collect();
 
@@ -27,7 +26,7 @@ impl From<&str> for ExtraIdiom {
 impl From<String> for ExtraIdiom {
     fn from(value: String) -> Self {
         let part: Vec<Part> = value
-            .par_split('.')
+            .split('.')
             .map(|x| Part::from(x))
             .collect();
 

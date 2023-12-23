@@ -43,11 +43,11 @@
 //!
 //!     let updated_struct: Option<MyStruct> = updated_struct.update(&db).await.unwrap();
 //!
-//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(updated_struct.unwrap().id.unwrap().id.to_raw(), &db).await.unwrap();
+//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(&db, updated_struct.unwrap().id.unwrap().id.to_raw()).await.unwrap();
 //!
 //!     let get_all: Vec<MyStruct> = MyStruct::get_all(&db).await.unwrap();
 //!
-//!     let get_by_id: Option<MyStruct> = MyStruct::get_by_id("id", &db).await.unwrap();
+//!     let get_by_id: Option<MyStruct> = MyStruct::get_by_id(&db, "id").await.unwrap();
 //!
 //!     Ok(())
 //! }
@@ -69,9 +69,11 @@ use surrealdb::sql::Thing;
 #[cfg(feature = "query")]
 use crate::query::select::SelectBuilder;
 #[cfg(feature = "query")]
+use crate::query::statement::StatementBuilder;
+#[cfg(feature = "query")]
 use crate::query::states::{FilledWhat, NoFields};
 #[cfg(feature = "query")]
-use crate::query::statement::StatementBuilder;
+use crate::query::states::NoCond;
 
 #[async_trait]
 pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
@@ -91,7 +93,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         Ok(s)
     }
 
-    async fn delete<C: Connection>(id: impl Into<String> + std::marker::Send, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
+    async fn delete<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>, TableError> {
         let s: Option<Self> = db.delete((Self::TABLE_NAME, id.into())).await.map_err(TableError::Db)?;
 
         Ok(s)
@@ -103,7 +105,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         Ok(vec_s)
     }
 
-    async fn get_by_id<C: Connection>(id: impl Into<String> + std::marker::Send, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
+    async fn get_by_id<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>, TableError> {
         let s: Option<Self> = db.select((Self::TABLE_NAME, id.into())).await.map_err(TableError::Db)?;
 
         Ok(s)
@@ -141,7 +143,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     }
 
     #[cfg(feature = "query")]
-    fn select<C: Connection>(id: Option<String>, db: &Surreal<C> ) -> SelectBuilder<FilledWhat, NoFields, C> {
+    fn select<C: Connection>(db: &Surreal<C>, id: Option<String>) -> SelectBuilder<C, FilledWhat, NoFields, NoCond> {
 
         if let Some(id) = id {
             return db.select_builder().what(Thing::from((Self::TABLE_NAME.to_string(), id)))

@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb_extra_tests"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 readme = "crates-io.md"
 documentation = "https://docs.rs/surrealdb_extra"
@@ -11,9 +11,9 @@ categories = ["database", "database-implementations"]
 [dependencies]
 surrealdb_extra = { path = "../surrealdb_extra", features = ["default", "query"] }
 surrealdb_extra_derive = { path = "../surrealdb_extra_derive" }
-surrealdb = { version = "1.0.0", features = ["kv-mem", "scripting"] }
-serde = { version = "1.0.163", features = ["derive"] }
-tokio = { version = "1.28.1", features = ["rt", "macros"] }
+surrealdb = { version = "1.0.2", features = ["kv-mem", "scripting"] }
+serde = { version = "1.0.193", features = ["derive"] }
+tokio = { version = "1.35.1", features = ["rt", "macros"] }
 
 [[test]]
 name = "surrealdb_extra_tests"

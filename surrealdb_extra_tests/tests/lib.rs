@@ -79,7 +79,7 @@ async fn table_db_get_by_id() {
     let tc = tc.first().unwrap();
     let tc_id = tc.clone().id.unwrap();
 
-    let op_t = Test::get_by_id(tc_id.id.to_raw(), &db).await.unwrap();
+    let op_t = Test::get_by_id(&db, tc_id.id.to_raw()).await.unwrap();
 
     assert!(op_t.is_some());
     assert_eq!(op_t.unwrap().get_id().clone().unwrap(), tc_id)
@@ -101,9 +101,9 @@ async fn table_delete() {
 
     assert!(tc_id.is_some());
 
-    let td = Test::delete(tc_id.unwrap().id.to_raw(), &db).await.unwrap();
+    let td = Test::delete(&db, tc_id.unwrap().id.to_raw()).await.unwrap();
 
-    let op_td = Test::get_by_id(td.unwrap().get_id().clone().unwrap().id.to_raw(), &db).await.unwrap();
+    let op_td = Test::get_by_id(&db, td.unwrap().get_id().clone().unwrap().id.to_raw()).await.unwrap();
 
     assert!(op_td.is_none())
 }

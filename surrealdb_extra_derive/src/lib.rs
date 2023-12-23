@@ -1,11 +1,8 @@
 mod table_name;
 
-
-extern crate proc_macro;
-
-use ::proc_macro::TokenStream;
-use ::quote::quote;
-use ::syn::{parse_macro_input, DeriveInput};
+use proc_macro::TokenStream;
+use quote::quote;
+use syn::{parse_macro_input, DeriveInput};
 use crate::table_name::get_table_name;
 
 #[proc_macro_derive(Table, attributes(table))]

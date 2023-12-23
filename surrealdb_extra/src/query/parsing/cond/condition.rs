@@ -1,4 +1,5 @@
-use surrealdb::sql::{Expression, Operator, Value};
+use surrealdb::sql::{Expression, Operator, Subquery, Value};
+use crate::query::parsing::cond::ExtraCond;
 use crate::query::parsing::str_to_value;
 
 #[derive(Debug, Clone, Default)]
@@ -10,6 +11,7 @@ pub enum Condition {
     ValOpVal(Value, Operator, Value),
     OperatorValue(Operator, Value),
     Operator(Operator),
+    SubCond(ExtraCond),
 }
 
 impl Condition {
@@ -21,11 +23,13 @@ impl Condition {
                     Expression::Binary { l, o, r }.into()
                 )
             }
-            Condition::Operator(_) => { Value::Null }
             Condition::OperatorValue(o, v) => {
                 Value::Expression(
                     Expression::Unary { o, v }.into()
                 )
+            }
+            Condition::SubCond(v) => {
+                Value::Subquery(Box::new(Subquery::Value(v.0.0)))
             }
             _ => { Value::Null }
         }
@@ -33,11 +37,23 @@ impl Condition {
 
     pub fn to_operator(self) -> Operator {
         match self {
-            Condition::Value(_) => { Operator::default() }
-            Condition::ValOpVal(_, _, _) => { Operator::default() }
             Condition::Operator(o) => { o }
-            Condition::OperatorValue(_, _) => { Operator::default() }
             _ => { Operator::default() }
+        }
+    }
+
+    pub fn is_value(&self) -> bool {
+        match self {
+            Condition::Value(..) => true,
+            Condition::ValOpVal(..) => true,
+            Condition::OperatorValue(..) => true,
+            _ => false,
+        }
+    }
+    pub fn is_operator(&self) -> bool {
+        match self {
+            Condition::Operator(_) => true,
+            _ => false
         }
     }
 }
@@ -189,14 +205,22 @@ impl From<(Value, Operator, String)> for Condition {
     }
 }
 
+impl From<ExtraCond> for Condition {
+    fn from(value: ExtraCond) -> Self {
+        Self::SubCond(value)
+    }
+}
+
 #[macro_export]
 macro_rules! cond_vec {
     () => (
         std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::new()
     );
-    ($($x:expr),+ $(,)?) => (
-        std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::from([$($crate::query::parsing::cond::Condition::from($x)),+])
-    );
+    ($($x:expr),+ $(,)?) => [
+        $crate::query::parsing::cond::ExtraCond::from(
+            std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::from([$($crate::query::parsing::cond::Condition::from($x)),+])
+        )
+    ];
 }
 
 #[cfg(test)]
@@ -210,13 +234,5 @@ mod test {
 
         let _extra_cond = ExtraCond::from(vec_cond);
     }
-
-    #[test]
-    fn cond_vec() {
-        let v = cond_vec!["test", Operator::Equal, "test"];
-
-        assert_eq!(v.len(), 3);
-    }
-
 
 }

@@ -14,6 +14,13 @@ pub struct FilledFields;
 
 #[allow(dead_code)]
 #[derive(Debug)]
+pub struct NoCond;
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct FilledCond;
+
+#[allow(dead_code)]
+#[derive(Debug)]
 pub struct NoRelation;
 #[allow(dead_code)]
 #[derive(Debug)]

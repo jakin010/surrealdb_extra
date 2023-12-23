@@ -2,40 +2,42 @@ use std::marker::PhantomData;
 use surrealdb::{Connection, Surreal};
 use crate::query::relate::RelateBuilder;
 use crate::query::select::SelectBuilder;
-use crate::query::states::{NoFields, NoRelation, NoWhat};
+use crate::query::states::{NoCond, NoFields, NoRelation, NoWhat};
 use crate::query::update::UpdateBuilder;
 
-pub trait StatementBuilder<C>
-    where C: Connection
+pub trait StatementBuilder<Client>
+    where Client: Connection
 {
-    fn select_builder(&self) -> SelectBuilder<NoWhat, NoFields, C>;
-    fn update_builder(&self) -> UpdateBuilder<NoWhat, C>;
+    fn select_builder(&self) -> SelectBuilder<Client, NoWhat, NoFields, NoCond>;
+    fn update_builder(&self) -> UpdateBuilder<Client, NoWhat, NoCond>;
 
-    fn relate_builder(&self) -> RelateBuilder<NoRelation, C>;
+    fn relate_builder(&self) -> RelateBuilder<NoRelation, Client>;
 }
 
-impl<C: Connection> StatementBuilder<C> for Surreal<C>
-    where C: Connection
+impl<Client: Connection> StatementBuilder<Client> for Surreal<Client>
+    where Client: Connection
 {
-    fn select_builder(&self) -> SelectBuilder<NoWhat, NoFields, C> {
+    fn select_builder(&self) -> SelectBuilder<Client, NoWhat, NoFields, NoCond> {
         SelectBuilder {
             statement: Default::default(),
             db: self,
             what_state: PhantomData,
             fields_state: PhantomData,
+            cond_state: PhantomData,
         }
     }
 
-    fn update_builder(&self) -> UpdateBuilder<NoWhat, C> {
+    fn update_builder(&self) -> UpdateBuilder<Client, NoWhat, NoCond> {
         UpdateBuilder {
             statement: Default::default(),
             db: self,
             what_state: PhantomData,
+            cond_state: PhantomData,
         }
     }
 
     fn relate_builder(&self) -> RelateBuilder<
-    NoRelation, C> {
+    NoRelation, Client> {
         RelateBuilder {
             statement: Default::default(),
             db: self,

@@ -148,42 +148,22 @@ impl From<Vec<Condition>> for ExtraCond {
 
         let mut value: VecDeque<Condition> = value.into();
 
-        #[allow(dead_code, unused_assignments)]
-        let mut expr = Expression::default();
+        let l = value.pop_front().unwrap_or_default().to_value();
 
-        let l = value.pop_front().unwrap_or_default();
-        let l = l.to_value();
-
-        let o = value.pop_front().unwrap_or_default();
-        let o = o.to_operator();
-
-        let r = value.pop_front().unwrap_or_default();
-        let r = r.to_value();
-
-        expr = Expression::Binary { l, o, r };
-
-        let val_len = value.len()/2;
-
-        for _ in 0..val_len {
-            let o = value.pop_front().unwrap_or_default();
-            let o = o.to_operator();
-
-            let v = value.pop_front().unwrap_or_default();
-            let v = v.to_value();
-
-            expr = Expression::Binary {
-                l: Value::Expression(expr.into()),
-                o,
-                r: v
-            };
+        if value.is_empty() {
+            return Self(Cond(l));
         }
 
-        for _ in 0..val_len {
-            let o = value.pop_front().unwrap_or_default();
-            let o = o.to_operator();
+        let o = value.pop_front().unwrap_or_default().to_operator();
 
-            let v = value.pop_front().unwrap_or_default();
-            let v = v.to_value();
+        let r = value.pop_front().unwrap_or_default().to_value();
+
+        let mut expr = Expression::Binary { l, o, r };
+
+        while value.len() >= 2 {
+            let o = value.pop_front().unwrap_or_default().to_operator();
+
+            let v = value.pop_front().unwrap_or_default().to_value();
 
             expr = Expression::Binary {
                 l: Value::Expression(expr.into()),
@@ -202,28 +182,22 @@ impl From<VecDeque<Condition>> for ExtraCond {
             return Self(Cond(Value::Null))
         }
 
-        #[allow(dead_code, unused_assignments)]
-        let mut expr = Expression::default();
+        let l = value.pop_front().unwrap_or_default().to_value();
 
-        let l = value.pop_front().unwrap_or_default();
-        let l = l.to_value();
+        if value.is_empty() {
+            return Self(Cond(l));
+        }
 
-        let o = value.pop_front().unwrap_or_default();
-        let o = o.to_operator();
+        let o = value.pop_front().unwrap_or_default().to_operator();
 
-        let r = value.pop_front().unwrap_or_default();
-        let r = r.to_value();
+        let r = value.pop_front().unwrap_or_default().to_value();
 
-        expr = Expression::Binary { l, o, r };
+        let mut expr = Expression::Binary { l, o, r };
 
-        let val_len = value.len()/2;
+        while value.len() >= 2 {
+            let o = value.pop_front().unwrap_or_default().to_operator();
 
-        for _ in 0..val_len {
-            let o = value.pop_front().unwrap_or_default();
-            let o = o.to_operator();
-
-            let v = value.pop_front().unwrap_or_default();
-            let v = v.to_value();
+            let v = value.pop_front().unwrap_or_default().to_value();
 
             expr = Expression::Binary {
                 l: Value::Expression(expr.into()),

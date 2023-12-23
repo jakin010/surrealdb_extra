@@ -22,10 +22,7 @@ pub mod value;
 pub mod table;
 
 pub fn str_to_value(val: impl Into<String>) -> Value {
-    match value(&val.into()) {
-        Ok(v) => v,
-        Err(_) => Value::Null
-    }
+    value(&val.into()).unwrap_or_else(|_| Value::Null)
 }
 
 #[cfg(test)]

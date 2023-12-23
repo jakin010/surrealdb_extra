@@ -30,6 +30,113 @@ pub struct Test {
     name: String,
     n: i64
 }
+
+fn select_builder_with_cond_5_exact_benchmark(c: &mut Criterion) {
+
+    let r = Runtime::new().unwrap();
+
+    c.bench_function(
+        "select_builder_with_cond_5_exact", move |b|
+            b.to_async(&r).iter_custom(|iters| async move {
+
+                let db = db().await;
+
+                let start = Instant::now();
+                for _i in 0..iters {
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                        ]).to_query()
+                        .bind(("name", "test"))
+                        .bind(("n", 3));
+                }
+                start.elapsed()
+            })
+    );
+}
+fn query_with_cond_5_exact_benchmark(c: &mut Criterion) {
+
+    let r = Runtime::new().unwrap();
+
+    c.bench_function(
+        "query_with_cond_5_exact", move |b|
+            b.to_async(&r).iter_custom(|iters| async move {
+
+                let db = db().await;
+
+                let start = Instant::now();
+                for _i in 0..iters {
+                    let _query = db.query("SELECT * FROM test WHERE n > $n AND n > $n AND n > $n AND n > $n AND n > $n")
+                        .bind(("name", "test"))
+                        .bind(("n", 3));
+                }
+                start.elapsed()
+            })
+    );
+}
+
+fn select_builder_with_cond_and_subquery_benchmark(c: &mut Criterion) {
+
+    let r = Runtime::new().unwrap();
+
+    c.bench_function(
+        "select_builder_with_cond_and_subquery", move |b|
+            b.to_async(&r).iter_custom(|iters| async move {
+
+                let db = db().await;
+
+                let start = Instant::now();
+                for _i in 0..iters {
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
+                            ("name", Operator::Equal, "$name"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            ("n", Operator::MoreThan, "$n"),
+                                Operator::And,
+                            cond_vec![("test", Operator::Equal, "$n"), Operator::And, ("n", Operator::MoreThan, "$n"), Operator::And, ("n", Operator::MoreThan, "$n")]
+                        ]).to_query()
+                        .bind(("name", "test"))
+                        .bind(("n", 3));
+                }
+                start.elapsed()
+            })
+    );
+}
+fn query_with_cond_and_subquery_benchmark(c: &mut Criterion) {
+
+    let r = Runtime::new().unwrap();
+
+    c.bench_function(
+        "query_with_cond_and_subquery", move |b|
+            b.to_async(&r).iter_custom(|iters| async move {
+
+                let db = db().await;
+
+                let start = Instant::now();
+                for _i in 0..iters {
+                    let _query = db.query("SELECT * FROM test WHERE name = $name AND n > $n AND n > $n AND n > $n AND n > $n AND n > $n AND (test = $n AND n > $n AND n > $n)")
+                        .bind(("name", "test"))
+                        .bind(("n", 3));
+                }
+                start.elapsed()
+            })
+    );
+}
+
 fn select_builder_with_cond_benchmark(c: &mut Criterion) {
 
     let r = Runtime::new().unwrap();
@@ -166,8 +273,16 @@ criterion_group!(benches_query_without_cond, query_without_cond_benchmark);
 criterion_group!(benches_select_more_options, select_builder_with_more_options_benchmark);
 criterion_group!(benches_query_more_options, query_with_more_options_benchmark);
 
+criterion_group!(benches_select_subquery, select_builder_with_cond_and_subquery_benchmark);
+criterion_group!(benches_query_subquery, query_with_cond_and_subquery_benchmark);
+
+criterion_group!(benches_select_5, select_builder_with_cond_5_exact_benchmark);
+criterion_group!(benches_query_5, query_with_cond_5_exact_benchmark);
+
 criterion_main!(
     benches_select_with_cond, benches_query_with_cond,
     benches_select_without_cond, benches_query_without_cond,
-    benches_select_more_options, benches_query_more_options
+    benches_select_more_options, benches_query_more_options,
+    benches_select_subquery, benches_query_subquery,
+    benches_select_5, benches_query_5,
 );
