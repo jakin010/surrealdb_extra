@@ -20,6 +20,7 @@ pub mod set_expression;
 pub mod unset_expression;
 pub mod value;
 pub mod table;
+pub mod operator;
 
 pub fn str_to_value(val: impl Into<String>) -> Value {
     value(&val.into()).unwrap_or_else(|_| Value::Null)

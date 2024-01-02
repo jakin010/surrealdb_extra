@@ -170,7 +170,7 @@ impl<'r, Client> SelectBuilder<'r, Client, FilledWhat, FilledFields, NoCond>
     /// ```rust
     /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
-    /// use surrealdb_extra::cond_vec;
+    /// use surrealdb_extra::{cond_vec, op};
     /// use surrealdb_extra::query::parsing::cond::Condition;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
@@ -181,10 +181,10 @@ impl<'r, Client> SelectBuilder<'r, Client, FilledWhat, FilledFields, NoCond>
     ///     SelectBuilder::new(&db).what("test").field("test").condition("test");
     ///     // The above builder becomes `SELECT test FROM test WHERE test`
     ///
-    ///     SelectBuilder::new(&db).what("test").field("test").condition((Operator::Not, "test"));
+    ///     SelectBuilder::new(&db).what("test").field("test").condition((op!(!), "test"));
     ///     // The above builder becomes `SELECT test FROM test WHERE !test`
     ///
-    ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", Operator::MoreThan, "$test"));
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", op!(>), "$test"));
     ///     // The above builder becomes `SELECT test FROM test WHERE test > $test`
     ///
     ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", Operator::Equal, "$test"));

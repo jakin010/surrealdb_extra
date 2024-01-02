@@ -66,14 +66,14 @@ pub use crate::table::err::TableError;
 
 #[cfg(feature = "query")]
 use surrealdb::sql::Thing;
+
 #[cfg(feature = "query")]
-use crate::query::select::SelectBuilder;
-#[cfg(feature = "query")]
-use crate::query::statement::StatementBuilder;
-#[cfg(feature = "query")]
-use crate::query::states::{FilledWhat, NoFields};
-#[cfg(feature = "query")]
-use crate::query::states::NoCond;
+use crate::query::{
+    select::SelectBuilder,
+    update::UpdateBuilder,
+    statement::StatementBuilder,
+    states::{FilledWhat, NoFields, NoCond}
+};
 
 #[async_trait]
 pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
@@ -143,12 +143,20 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     }
 
     #[cfg(feature = "query")]
-    fn select<C: Connection>(db: &Surreal<C>, id: Option<String>) -> SelectBuilder<C, FilledWhat, NoFields, NoCond> {
-
+    fn select_builder<C: Connection>(db: &Surreal<C>, id: Option<String>) -> SelectBuilder<C, FilledWhat, NoFields, NoCond> {
         if let Some(id) = id {
-            return db.select_builder().what(Thing::from((Self::TABLE_NAME.to_string(), id)))
+            return db.select_builder().what(Thing::from((Self::TABLE_NAME, id.as_str())))
         }
 
         db.select_builder().what(Self::TABLE_NAME)
+    }
+
+    #[cfg(feature = "query")]
+    fn update_builder<C: Connection>(db: &Surreal<C>, id: Option<String>) -> UpdateBuilder<C, FilledWhat, NoCond> {
+        if let Some(id) = id {
+            return db.update_builder().what(Thing::from((Self::TABLE_NAME, id.as_str())))
+        }
+
+        db.update_builder().what(Self::TABLE_NAME)
     }
 }

@@ -13,16 +13,17 @@ categories = ["database", "database-implementations"]
 [dependencies]
 surrealdb_extra_derive = { version = "0.6.0", path = "../surrealdb_extra_derive" }
 async-trait = "0.1.75"
-surrealdb = "1.0.2"
+surrealdb = { workspace = true }
 serde = { version = "1.0.193", features = ["derive"] }
 thiserror = "1.0.51"
 anyhow = "1.0.76"
 chrono = "0.4.31"
+paste = { version = "1.0.14", optional = true }
 
 [features]
 default = ["derive"]
 table = []
-query = ["derive"]
+query = ["derive", "paste"]
 derive = ["table"]
 
 [dev-dependencies]
