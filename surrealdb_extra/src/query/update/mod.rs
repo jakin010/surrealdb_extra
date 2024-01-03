@@ -77,7 +77,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoCond>
     /// ```rust
     /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
-    /// use surrealdb_extra::cond_vec;
+    /// use surrealdb_extra::{cond_vec, op};
     /// use surrealdb_extra::query::parsing::cond::Condition;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
@@ -88,13 +88,13 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoCond>
     ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test`
     ///
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition((Operator::Not, "test"));
+    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![(Operator::Not, "test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE !test`
     ///
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(("test", Operator::MoreThan, "$test"));
+    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", op!(>), "$test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test > $test`
     ///
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(("test", Operator::Equal, "$test"));
+    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", Operator::Equal, "$test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test = $test`
     ///
     ///     // For multiple conditions the vector `cond_vec![]` is recommended for usage

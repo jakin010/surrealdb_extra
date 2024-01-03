@@ -57,7 +57,7 @@ macro_rules! op {
     (<$x:tt>) => { ::surrealdb::sql::Operator::Knn($x) };
 
     ($x:tt) => { 
-        ::paste::item!(
+        $crate::item!(
             ::surrealdb::sql::Operator::[<$x:camel>]
         )
      };

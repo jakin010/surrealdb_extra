@@ -181,13 +181,13 @@ impl<'r, Client> SelectBuilder<'r, Client, FilledWhat, FilledFields, NoCond>
     ///     SelectBuilder::new(&db).what("test").field("test").condition("test");
     ///     // The above builder becomes `SELECT test FROM test WHERE test`
     ///
-    ///     SelectBuilder::new(&db).what("test").field("test").condition((op!(!), "test"));
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(cond_vec![(op!(!), "test")]);
     ///     // The above builder becomes `SELECT test FROM test WHERE !test`
     ///
-    ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", op!(>), "$test"));
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(cond_vec![("test", op!(>), "$test")]);
     ///     // The above builder becomes `SELECT test FROM test WHERE test > $test`
     ///
-    ///     SelectBuilder::new(&db).what("test").field("test").condition(("test", Operator::Equal, "$test"));
+    ///     SelectBuilder::new(&db).what("test").field("test").condition(cond_vec![("test", Operator::Equal, "$test")]);
     ///     // The above builder becomes `SELECT test FROM test WHERE test = $test`
     ///
     ///     // For multiple conditions the vector `cond_vec![]` is recommended for usage

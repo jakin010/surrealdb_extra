@@ -1,3 +1,4 @@
+use surrealdb::sql::statements::SelectStatement;
 use surrealdb::sql::{Expression, Operator, Subquery, Value};
 use crate::query::parsing::cond::ExtraCond;
 use crate::query::parsing::str_to_value;
@@ -12,6 +13,7 @@ pub enum Condition {
     OperatorValue(Operator, Value),
     Operator(Operator),
     SubCond(ExtraCond),
+    Subquery(Subquery),
 }
 
 impl Condition {
@@ -30,6 +32,9 @@ impl Condition {
             }
             Condition::SubCond(v) => {
                 Value::Subquery(Box::new(Subquery::Value(v.0.0)))
+            }
+            Condition::Subquery(v) => {
+                Value::Subquery(Box::new(v))
             }
             _ => { Value::Null }
         }
@@ -57,6 +62,78 @@ impl Condition {
         }
     }
 }
+
+macro_rules! create_from_condition_strings {
+    ($l:ty, $r:ty) => {
+        impl From<($l, Operator, $r)> for Condition {
+            fn from(value: ($l, Operator, $r)) -> Self {
+        
+                let l = str_to_value(value.0);
+                let o = value.1;
+                let r = str_to_value(value.2);
+        
+                Self::ValOpVal(l, o, r)
+            }
+        }
+    };
+}
+
+macro_rules! create_from_condition_string_value {
+    ($l:ty) => {
+        impl From<($l, Operator, Value)> for Condition {
+            fn from(value: ($l, Operator, Value)) -> Self {
+        
+                let l = str_to_value(value.0);
+                let o = value.1;
+        
+                Self::ValOpVal(l, o, value.2)
+            }
+        }
+    };
+}
+
+macro_rules! create_from_condition_string_select {
+    ($l:ty) => {
+        impl From<($l, Operator, SelectStatement)> for Condition {
+            fn from(value: ($l, Operator, SelectStatement)) -> Self {
+        
+                let l = str_to_value(value.0);
+                let o = value.1;
+                let r = Value::Subquery(Box::new(Subquery::Select(value.2)));
+        
+                Self::ValOpVal(l, o, r)
+            }
+        }
+    };
+}
+
+macro_rules! create_from_condition_value_string {
+    ($r:ty) => {
+        impl From<(Value, Operator, $r)> for Condition {
+            fn from(value: (Value, Operator, $r)) -> Self {
+        
+                let o = value.1;
+                let r = str_to_value(value.2);
+        
+                Self::ValOpVal(value.0, o, r)
+            }
+        }
+    };
+}
+
+create_from_condition_strings!(&str, &str);
+create_from_condition_strings!(String, String);
+create_from_condition_strings!(&str, String);
+create_from_condition_strings!(String, &str);
+
+create_from_condition_string_value!(&str);
+create_from_condition_string_value!(String);
+
+create_from_condition_string_select!(&str);
+create_from_condition_string_select!(String);
+
+create_from_condition_value_string!(&str);
+create_from_condition_value_string!(String);
 
 impl From<&str> for Condition {
     fn from(value: &str) -> Self {
@@ -110,50 +187,6 @@ impl From<(Operator, Value)> for Condition {
     }
 }
 
-impl From<(&str, Operator, &str)> for Condition {
-    fn from(value: (&str, Operator, &str)) -> Self {
-
-        let l = str_to_value(value.0);
-        let o = value.1;
-        let r = str_to_value(value.2);
-
-        Self::ValOpVal(l, o, r)
-    }
-}
-
-impl From<(String, Operator, String)> for Condition {
-    fn from(value: (String, Operator, String)) -> Self {
-
-        let l = str_to_value(value.0);
-        let o = value.1;
-        let r = str_to_value(value.2);
-
-        Self::ValOpVal(l, o, r)
-    }
-}
-
-impl From<(&str, Operator, String)> for Condition {
-    fn from(value: (&str, Operator, String)) -> Self {
-
-        let l = str_to_value(value.0);
-        let o = value.1;
-        let r = str_to_value(value.2);
-
-        Self::ValOpVal(l, o, r)
-    }
-}
-
-impl From<(String, Operator, &str)> for Condition {
-    fn from(value: (String, Operator, &str)) -> Self {
-
-        let l = str_to_value(value.0);
-        let o = value.1;
-        let r = str_to_value(value.2);
-
-        Self::ValOpVal(l, o, r)
-    }
-}
-
 impl From<(Value, Operator, Value)> for Condition {
     fn from(value: (Value, Operator, Value)) -> Self {
 
@@ -163,45 +196,13 @@ impl From<(Value, Operator, Value)> for Condition {
     }
 }
 
-impl From<(&str, Operator, Value)> for Condition {
-    fn from(value: (&str, Operator, Value)) -> Self {
-        let l = str_to_value(value.0);
+impl From<(Value, Operator, SelectStatement)> for Condition {
+    fn from(value: (Value, Operator, SelectStatement)) -> Self {
 
         let o = value.1;
+        let r = Value::Subquery(Box::new(Subquery::Select(value.2)));
 
-        Self::ValOpVal(l, o, value.2)
-    }
-}
-
-impl From<(String, Operator, Value)> for Condition {
-    fn from(value: (String, Operator, Value)) -> Self {
-        let l = str_to_value(value.0);
-
-        let o = value.1;
-
-        Self::ValOpVal(l, o, value.2)
-    }
-}
-
-impl From<(Value, Operator, &str)> for Condition {
-    fn from(value: (Value, Operator, &str)) -> Self {
-        let l = value.0;
-        let o = value.1;
-        let r = str_to_value(value.2);
-
-
-        Self::ValOpVal(l, o, r)
-    }
-}
-
-impl From<(Value, Operator, String)> for Condition {
-    fn from(value: (Value, Operator, String)) -> Self {
-        let l = value.0;
-        let o = value.1;
-        let r = str_to_value(value.2);
-
-
-        Self::ValOpVal(l, o, r)
+        Self::ValOpVal(value.0, o, r)
     }
 }
 
@@ -211,11 +212,17 @@ impl From<ExtraCond> for Condition {
     }
 }
 
+impl From<SelectStatement> for Condition {
+    fn from(value: SelectStatement) -> Self {
+        Self::Subquery(Subquery::Select(value))
+    }
+}
+
 #[macro_export]
 macro_rules! cond_vec {
-    () => (
+    () => [
         std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::new()
-    );
+    ];
     ($($x:expr),+ $(,)?) => [
         $crate::query::parsing::cond::ExtraCond::from(
             std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::from([$($crate::query::parsing::cond::Condition::from($x)),+])
@@ -225,8 +232,10 @@ macro_rules! cond_vec {
 
 #[cfg(test)]
 mod test {
-    use crate::query::parsing::cond::ExtraCond;
     use super::*;
+
+    use crate::query::parsing::cond::ExtraCond;
+    use crate::op;
 
     #[test]
     fn from_condition() {
@@ -234,5 +243,21 @@ mod test {
 
         let _extra_cond = ExtraCond::from(vec_cond);
     }
+
+    #[test]
+    fn condition1() {
+        let _ = cond_vec![(op!(!), "test")];
+    }
+
+    #[test]
+    fn condition3() {
+        let _ = cond_vec!["cond1", op!(||), (op!(!), "test")];
+    }
+
+    #[test]
+    fn condition5() {
+        let _cond = cond_vec!["cond1", op!(and), (op!(!), "test"), op!(or), ("test", op!(!=), "$test")];
+    }
+
 
 }

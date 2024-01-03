@@ -3,7 +3,7 @@
 mod condition;
 
 use std::collections::VecDeque;
-use surrealdb::sql::{Cond, Value, Expression, Operator};
+use surrealdb::sql::{Cond, Value, Expression};
 use crate::query::parsing::str_to_value;
 pub use super::cond::condition::Condition;
 
@@ -41,102 +41,6 @@ impl From<String> for ExtraCond {
         let val = str_to_value(value);
 
         Self(Cond(val))
-    }
-}
-
-impl From<(Operator, &str)> for ExtraCond {
-    fn from(value: (Operator, &str)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(Operator, String)> for ExtraCond {
-    fn from(value: (Operator, String)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(Operator, Value)> for ExtraCond {
-    fn from(value: (Operator, Value)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(&str, Operator, &str)> for ExtraCond {
-    fn from(value: (&str, Operator, &str)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(String, Operator, String)> for ExtraCond {
-    fn from(value: (String, Operator, String)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(&str, Operator, String)> for ExtraCond {
-    fn from(value: (&str, Operator, String)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(String, Operator, &str)> for ExtraCond {
-    fn from(value: (String, Operator, &str)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(Value, Operator, Value)> for ExtraCond {
-    fn from(value: (Value, Operator, Value)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(&str, Operator, Value)> for ExtraCond {
-    fn from(value: (&str, Operator, Value)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(String, Operator, Value)> for ExtraCond {
-    fn from(value: (String, Operator, Value)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(Value, Operator, &str)> for ExtraCond {
-    fn from(value: (Value, Operator, &str)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
-    }
-}
-
-impl From<(Value, Operator, String)> for ExtraCond {
-    fn from(value: (Value, Operator, String)) -> Self {
-        let cond = Condition::from(value).to_value();
-
-        Self(Cond(cond))
     }
 }
 
@@ -223,7 +127,7 @@ impl From<Condition> for ExtraCond {
 mod test {
     use serde::{Deserialize, Serialize};
     use surrealdb::{engine::any::connect, sql::Part};
-    use surrealdb::sql::{Field, Thing};
+    use surrealdb::sql::{Field, Thing, Operator};
     use crate::cond_vec;
     use crate::query::statement::StatementBuilder;
 
@@ -266,7 +170,7 @@ mod test {
 
         assert_eq!(vec1_t.len(), 1);
 
-        let select = db.select_builder().what(Test::TABLE_NAME).field("name").field("n").condition(("n", Operator::MoreThan, "$num")).to_query().bind(("num", 9));
+        let select = db.select_builder().what(Test::TABLE_NAME).field("name").field("n").condition(cond_vec![("n", Operator::MoreThan, "$num")]).to_query().bind(("num", 9));
         let mut select_res = select.await.unwrap();
         let vec2_t: Vec<Test> = select_res.take(0).unwrap();
 

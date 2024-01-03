@@ -7,3 +7,6 @@ pub mod table;
 #[cfg(feature = "query")]
 pub mod query;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "query")))]
+#[cfg(feature = "query")]
+pub use ::paste::item;
