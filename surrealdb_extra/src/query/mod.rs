@@ -1,6 +1,6 @@
 //! This is the query builder
 //!
-//! For more documentation go to select
+//! For more documentation go to select, update or relate
 
 pub mod statement;
 pub mod parsing;

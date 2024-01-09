@@ -67,11 +67,11 @@ macro_rules! create_from_condition_strings {
     ($l:ty, $r:ty) => {
         impl From<($l, Operator, $r)> for Condition {
             fn from(value: ($l, Operator, $r)) -> Self {
-        
+
                 let l = str_to_value(value.0);
                 let o = value.1;
                 let r = str_to_value(value.2);
-        
+
                 Self::ValOpVal(l, o, r)
             }
         }
@@ -82,10 +82,10 @@ macro_rules! create_from_condition_string_value {
     ($l:ty) => {
         impl From<($l, Operator, Value)> for Condition {
             fn from(value: ($l, Operator, Value)) -> Self {
-        
+
                 let l = str_to_value(value.0);
                 let o = value.1;
-        
+
                 Self::ValOpVal(l, o, value.2)
             }
         }
@@ -96,11 +96,11 @@ macro_rules! create_from_condition_string_select {
     ($l:ty) => {
         impl From<($l, Operator, SelectStatement)> for Condition {
             fn from(value: ($l, Operator, SelectStatement)) -> Self {
-        
+
                 let l = str_to_value(value.0);
                 let o = value.1;
                 let r = Value::Subquery(Box::new(Subquery::Select(value.2)));
-        
+
                 Self::ValOpVal(l, o, r)
             }
         }
@@ -111,10 +111,10 @@ macro_rules! create_from_condition_value_string {
     ($r:ty) => {
         impl From<(Value, Operator, $r)> for Condition {
             fn from(value: (Value, Operator, $r)) -> Self {
-        
+
                 let o = value.1;
                 let r = str_to_value(value.2);
-        
+
                 Self::ValOpVal(value.0, o, r)
             }
         }
@@ -220,9 +220,6 @@ impl From<SelectStatement> for Condition {
 
 #[macro_export]
 macro_rules! cond_vec {
-    () => [
-        std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::new()
-    ];
     ($($x:expr),+ $(,)?) => [
         $crate::query::parsing::cond::ExtraCond::from(
             std::collections::VecDeque::<$crate::query::parsing::cond::Condition>::from([$($crate::query::parsing::cond::Condition::from($x)),+])
@@ -256,7 +253,10 @@ mod test {
 
     #[test]
     fn condition5() {
-        let _cond = cond_vec!["cond1", op!(and), (op!(!), "test"), op!(or), ("test", op!(!=), "$test")];
+        let cond1 = cond_vec!["cond1", op!(and), (op!(!), "test"), op!(or), ("test", op!(!=), "$test")];
+        let cond2 = cond_vec!["cond1", op!(AND), "!test", op!(Or), ("test", op!(NotEqual), "$test")];
+
+        assert_eq!(cond1, cond2);
     }
 
 

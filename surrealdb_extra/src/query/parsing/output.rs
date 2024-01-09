@@ -34,72 +34,33 @@ impl From<Field> for ExtraOutput {
     }
 }
 
-impl From<&str> for ExtraOutput {
-    fn from(value: &str) -> Self {
-        let field = ExtraField::from(value).0;
+macro_rules! to_output_from_extra_field {
+    ($x:ty) => {
+        impl From<Vec<$x>> for ExtraOutput {
+            fn from(value: Vec<$x>) -> Self {
+                let fields = value.into_iter().map(|x|  ExtraField::from(x).0).collect();
 
-        let fields = Fields(vec![field], false);
+                let fields = Fields(fields, false);
 
-        Self(Output::Fields(fields))
-    }
+                Self(Output::Fields(fields))
+            }
+        }
+        impl From<$x> for ExtraOutput {
+            fn from(value: $x) -> Self {
+                let field = ExtraField::from(value).0;
+
+                let fields = Fields(vec![field], false);
+
+                Self(Output::Fields(fields))
+            }
+        }
+    };
 }
 
-impl From<String> for ExtraOutput {
-    fn from(value: String) -> Self {
-        let field = ExtraField::from(value).0;
-
-        let fields = Fields(vec![field], false);
-
-        Self(Output::Fields(fields))
-    }
-}
-
-impl From<Value> for ExtraOutput {
-    fn from(value: Value) -> Self {
-        let field = ExtraField::from(value).0;
-
-        let fields = Fields(vec![field], false);
-
-        Self(Output::Fields(fields))
-    }
-}
-
-impl From<(&str, &str)> for ExtraOutput {
-    fn from(value: (&str, &str)) -> Self {
-        let field = ExtraField::from(value).0;
-
-        let fields = Fields(vec![field], false);
-
-        Self(Output::Fields(fields))
-    }
-}
-
-impl From<(String, String)> for ExtraOutput {
-    fn from(value: (String, String)) -> Self {
-        let field = ExtraField::from(value).0;
-
-        let fields = Fields(vec![field], false);
-
-        Self(Output::Fields(fields))
-    }
-}
-
-impl From<(&str, String)> for ExtraOutput {
-    fn from(value: (&str, String)) -> Self {
-        let field = ExtraField::from(value).0;
-
-        let fields = Fields(vec![field], false);
-
-        Self(Output::Fields(fields))
-    }
-}
-
-impl From<(String, &str)> for ExtraOutput {
-    fn from(value: (String, &str)) -> Self {
-        let field = ExtraField::from(value).0;
-
-        let fields = Fields(vec![field], false);
-
-        Self(Output::Fields(fields))
-    }
-}
+to_output_from_extra_field!(&str);
+to_output_from_extra_field!(String);
+to_output_from_extra_field!(Value);
+to_output_from_extra_field!((&str, &str));
+to_output_from_extra_field!((String, String));
+to_output_from_extra_field!((String, &str));
+to_output_from_extra_field!((&str, String));

@@ -7,7 +7,7 @@ use surrealdb::sql::{Cond, Value, Expression};
 use crate::query::parsing::str_to_value;
 pub use super::cond::condition::Condition;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ExtraCond(pub Cond);
 
 impl From<Cond> for ExtraCond {
@@ -128,7 +128,7 @@ mod test {
     use serde::{Deserialize, Serialize};
     use surrealdb::{engine::any::connect, sql::Part};
     use surrealdb::sql::{Field, Thing, Operator};
-    use crate::cond_vec;
+    use crate::{cond_vec, op};
     use crate::query::statement::StatementBuilder;
 
     use crate::table::Table;
@@ -252,5 +252,13 @@ mod test {
         };
 
         assert_eq!(idiom.0.first().unwrap().clone(), Part::from(field))
+    }
+
+    #[test]
+    fn cond_from_str() {
+        let cond1 = ExtraCond::from("test > test2 AND !test3");
+        let cond2  = cond_vec![("test", op!(>), "test2"), op!(and), (op!(!), "test3")];
+
+        assert_eq!(cond1, cond2);
     }
 }

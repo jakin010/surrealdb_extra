@@ -207,8 +207,16 @@ impl<'r, Client> SelectBuilder<'r, Client, FilledWhat, FilledFields, NoCond>
     ///     ]);
     ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test AND (test1 = $test1 AND test2 = $test2)`
     ///
+    ///     // It is also possible to type the condition like normal
+    ///     SelectBuilder::new(&db).what("test").field("test")
+    ///     .condition("test1 = $test1 AND test2 = $test2 or test or !test");
+    ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
+    ///
     /// }
     /// ```
+    ///
+    /// ## The fastest way to query is to use the string format for conditions at least from benchmarks
+    ///
     /// You can also use the Cond/Value type inside surrealdb for more complex requests
     pub fn condition(self, cond: impl Into<ExtraCond>) -> SelectBuilder<'r, Client, FilledWhat, FilledFields, FilledCond> {
         let Self { mut statement, db, .. } = self;

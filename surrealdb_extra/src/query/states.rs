@@ -26,3 +26,10 @@ pub struct NoRelation;
 #[derive(Debug)]
 pub struct FilledRelation;
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct NoData;
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct FilledData;
+

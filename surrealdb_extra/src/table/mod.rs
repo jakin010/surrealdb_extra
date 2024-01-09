@@ -58,6 +58,7 @@ pub mod err;
 #[cfg(feature = "derive")]
 pub use ::surrealdb_extra_derive::Table;
 
+use anyhow::Result;
 use ::async_trait::async_trait;
 use ::serde::de::DeserializeOwned;
 use ::serde::Serialize;
@@ -72,7 +73,7 @@ use crate::query::{
     select::SelectBuilder,
     update::UpdateBuilder,
     statement::StatementBuilder,
-    states::{FilledWhat, NoFields, NoCond}
+    states::{FilledWhat, NoFields, NoCond, FilledData}
 };
 
 #[async_trait]
@@ -87,26 +88,26 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 
     fn set_id(&mut self, id: impl Into<String>);
 
-    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>, TableError> {
-        let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await.map_err(TableError::Db)?;
+    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>> {
+        let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await?;
 
         Ok(s)
     }
 
-    async fn delete<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>, TableError> {
-        let s: Option<Self> = db.delete((Self::TABLE_NAME, id.into())).await.map_err(TableError::Db)?;
+    async fn delete<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>> {
+        let s: Option<Self> = db.delete((Self::TABLE_NAME, id.into())).await?;
 
         Ok(s)
     }
 
-    async fn get_all<C: Connection>(db: &Surreal<C>) -> Result<Vec<Self>, TableError> {
-        let vec_s: Vec<Self> = db.select(Self::TABLE_NAME).await.map_err(TableError::Db)?;
+    async fn get_all<C: Connection>(db: &Surreal<C>) -> Result<Vec<Self>> {
+        let vec_s: Vec<Self> = db.select(Self::TABLE_NAME).await?;
 
         Ok(vec_s)
     }
 
-    async fn get_by_id<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>, TableError> {
-        let s: Option<Self> = db.select((Self::TABLE_NAME, id.into())).await.map_err(TableError::Db)?;
+    async fn get_by_id<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>> {
+        let s: Option<Self> = db.select((Self::TABLE_NAME, id.into())).await?;
 
         Ok(s)
     }
@@ -128,7 +129,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     ///     id: Option<Thing>,
     /// }
     /// ```
-    async fn update<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>, TableError> {
+    async fn update<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>> {
         let s: Option<Self> = db
             .update(
                 (
@@ -137,7 +138,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
                 )
             )
             .merge(self)
-            .await.map_err(TableError::Db)?;
+            .await?;
 
         Ok(s)
     }
@@ -151,12 +152,13 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         db.select_builder().what(Self::TABLE_NAME)
     }
 
+    /// It auto fills the id (if filled) and the content of the struct if this is not what you want use `UpdateBuilder`
     #[cfg(feature = "query")]
-    fn update_builder<C: Connection>(db: &Surreal<C>, id: Option<String>) -> UpdateBuilder<C, FilledWhat, NoCond> {
-        if let Some(id) = id {
-            return db.update_builder().what(Thing::from((Self::TABLE_NAME, id.as_str())))
+    fn update_builder<C: Connection>(self, db: &Surreal<C>) -> UpdateBuilder<C, FilledWhat, FilledData, NoCond> {
+        if let Some(id) = self.get_id() {
+            return db.update_builder().what(id.clone()).content(self)
         }
 
-        db.update_builder().what(Self::TABLE_NAME)
+        db.update_builder().what(Self::TABLE_NAME).content(self)
     }
 }

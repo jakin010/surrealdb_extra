@@ -47,38 +47,58 @@ fn select_builder_from_expr_benchmark(c: &mut Criterion) {
                     let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(
                         Value::Expression(
                             Box::new(
-                                Expression::Binary { 
-                                    l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(), 
-                                    o: Condition::from(op!(and)).to_operator(), 
+                                Expression::Binary {
+                                    l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(),
+                                    o: Condition::from(op!(and)).to_operator(),
                                     r: Value::Expression(
                                         Box::new(
-                                            Expression::Binary { 
-                                                l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(), 
-                                                o: Condition::from(op!(and)).to_operator(), 
+                                            Expression::Binary {
+                                                l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(),
+                                                o: Condition::from(op!(and)).to_operator(),
                                                 r: Value::Expression(
                                                     Box::new(
-                                                        Expression::Binary { 
-                                                            l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(), 
-                                                            o: Condition::from(op!(and)).to_operator(), 
+                                                        Expression::Binary {
+                                                            l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(),
+                                                            o: Condition::from(op!(and)).to_operator(),
                                                             r: Value::Expression(
                                                                 Box::new(
-                                                                    Expression::Binary { 
-                                                                        l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(), 
-                                                                        o: Condition::from(op!(and)).to_operator(), 
+                                                                    Expression::Binary {
+                                                                        l: Condition::from(("n", Operator::MoreThan, "$n")).to_value(),
+                                                                        o: Condition::from(op!(and)).to_operator(),
                                                                         r: Condition::from(("n", Operator::MoreThan, "$n")).to_value(),
                                                                     }
                                                                 )
-                                                            ) 
+                                                            )
                                                         }
                                                     )
-                                                ) 
+                                                )
                                             }
                                         )
-                                    ) 
+                                    )
                                 }
                             )
                         )
                     ).to_query()
+                        .bind(("name", "test"))
+                        .bind(("n", 3));
+                }
+                start.elapsed()
+            })
+    );
+}
+
+fn select_builder_from_string_benchmark(c: &mut Criterion) {
+    let r = Runtime::new().unwrap();
+
+    c.bench_function(
+        "select_builder_from_string", move |b|
+            b.to_async(&r).iter_custom(|iters| async move {
+
+                let db = db().await;
+
+                let start = Instant::now();
+                for _i in 0..iters {
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition("n > $n AND n > $n AND n > $n AND n > $n AND n > $n").to_query()
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -320,7 +340,8 @@ fn query_with_more_options_benchmark(c: &mut Criterion) {
     );
 }
 
-criterion_group!(benches_select_from_expr_with_cond, select_builder_from_expr_benchmark);
+criterion_group!(benches_select_from_expr, select_builder_from_expr_benchmark);
+criterion_group!(benches_select_from_string, select_builder_from_string_benchmark);
 
 criterion_group!(benches_select_with_cond, select_builder_with_cond_benchmark);
 criterion_group!(benches_query_with_cond, query_with_cond_benchmark);
@@ -338,7 +359,8 @@ criterion_group!(benches_select_more_options, select_builder_with_more_options_b
 criterion_group!(benches_query_more_options, query_with_more_options_benchmark);
 
 criterion_main!(
-    benches_select_from_expr_with_cond,
+    benches_select_from_expr,
+    benches_select_from_string,
     benches_select_with_cond, benches_query_with_cond,
     benches_select_subquery, benches_query_subquery,
     benches_select_5, benches_query_5,

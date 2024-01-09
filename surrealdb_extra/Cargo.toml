@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb_extra"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Adds a orm and query builder on top of surrealdb"
@@ -11,12 +11,12 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.6.0", path = "../surrealdb_extra_derive" }
-async-trait = "0.1.75"
+surrealdb_extra_derive = { version = "0.7.0", path = "../surrealdb_extra_derive" }
+async-trait = "0.1.77"
 surrealdb = { workspace = true }
-serde = { version = "1.0.193", features = ["derive"] }
-thiserror = "1.0.51"
-anyhow = "1.0.76"
+serde = { version = "1.0.195", features = ["derive"] }
+thiserror = "1.0.56"
+anyhow = "1.0.79"
 chrono = "0.4.31"
 paste = { version = "1.0.14", optional = true }
 
@@ -28,7 +28,7 @@ derive = ["table"]
 
 [dev-dependencies]
 serde_with = "3.4.0"
-surrealdb = { version = "1.0.2", features = ["kv-mem"] }
+surrealdb = { workspace = true, features = ["kv-mem"] }
 tokio = { version = "1.35.1", features = ["macros"] }
 
 # docs.rs-specific configuration
