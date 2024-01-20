@@ -1,4 +1,4 @@
-use surrealdb::sql::{Idiom};
+use surrealdb::sql::Idiom;
 
 #[derive(Debug, Clone)]
 pub struct ExtraOmit(pub Idiom);
