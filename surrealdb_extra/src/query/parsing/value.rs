@@ -1,10 +1,10 @@
-use surrealdb::sql::{Thing, Value};
+use surrealdb::{opt::RecordId, sql::Value};
 
 #[derive(Debug, Clone)]
 pub struct ExtraValue(pub Value);
 
-impl From<Thing> for ExtraValue {
-    fn from(value: Thing) -> Self {
+impl From<RecordId> for ExtraValue {
+    fn from(value: RecordId) -> Self {
         ExtraValue(Value::Thing(value))
     }
 }

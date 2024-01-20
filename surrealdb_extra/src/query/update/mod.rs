@@ -43,7 +43,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     /// Example:
     /// ```rust
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb::sql::Thing;
+    /// use surrealdb::opt::RecordId;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
     /// #[tokio::main]
@@ -51,7 +51,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     ///     let db = connect("mem://").await.unwrap();
     ///     UpdateBuilder::new(&db).what("test");
     ///
-    ///     UpdateBuilder::new(&db).what(Thing::from(("test", "test")));
+    ///     UpdateBuilder::new(&db).what(RecordId::from(("test", "test")));
     /// }
     /// ```
     ///

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::local::{Db, Mem};
-use surrealdb::sql::Thing;
+use surrealdb::opt::RecordId;
 use surrealdb::{Error, Surreal};
 use surrealdb_extra::query::statement::StatementBuilder;
 use surrealdb_extra::table::Table;
@@ -9,7 +9,7 @@ use surrealdb_extra::table::Table;
 #[derive(Debug, Default, Table, Serialize, Deserialize, Clone, PartialEq)]
 #[table(name = "test_test")]
 pub struct Test {
-    id: Option<Thing>,
+    id: Option<RecordId>,
     name: String,
     n: Option<usize>,
 }
@@ -30,11 +30,11 @@ fn table_derive_init() {
 #[test]
 fn table_derive_get_id() {
     let t = Test {
-        id: Some(Thing::from(("test", "test"))),
+        id: Some(RecordId::from(("test", "test"))),
         name: "".to_string(),
         ..Test::default()
     };
-    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test", "test")))
+    assert_eq!(t.get_id().clone().unwrap(), RecordId::from(("test", "test")))
 }
 
 #[test]
@@ -46,7 +46,7 @@ fn table_derive_set_id() {
 
     t.set_id("test");
 
-    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test_test", "test")))
+    assert_eq!(t.get_id().clone().unwrap(), RecordId::from(("test_test", "test")))
 }
 
 #[tokio::test]

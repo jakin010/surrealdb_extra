@@ -7,7 +7,8 @@ use criterion::{
 use serde::{Deserialize, Serialize};
 
 use surrealdb::engine::any::{Any, connect};
-use surrealdb::sql::{Field, Thing, Operator, Value, Expression};
+use surrealdb::opt::RecordId;
+use surrealdb::sql::{Field, Operator, Value, Expression};
 use surrealdb::Surreal;
 use surrealdb_extra::query::parsing::cond::Condition;
 use tokio::runtime::Runtime;
@@ -27,7 +28,7 @@ async fn db() -> Surreal<Any> {
 #[derive(Debug, Table, Serialize, Deserialize, PartialEq, Clone)]
 #[table(name = "test")]
 pub struct Test {
-    id: Option<Thing>,
+    id: Option<RecordId>,
     name: String,
     n: i64
 }
@@ -158,6 +159,26 @@ fn query_with_cond_5_exact_benchmark(c: &mut Criterion) {
     );
 }
 
+
+fn select_builder_from_string_with_subquery_benchmark(c: &mut Criterion) {
+    let r = Runtime::new().unwrap();
+
+    c.bench_function(
+        "select_builder_from_string_with_subquery", move |b|
+            b.to_async(&r).iter_custom(|iters| async move {
+
+                let db = db().await;
+
+                let start = Instant::now();
+                for _i in 0..iters {
+                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition("name = $name AND n > $n AND n > $n AND n > $n AND n > $n AND n > $n AND (test = $n AND n > $n AND n > $n)").to_query()
+                        .bind(("name", "test"))
+                        .bind(("n", 3));
+                }
+                start.elapsed()
+            })
+    );
+}
 fn select_builder_with_cond_and_subquery_benchmark(c: &mut Criterion) {
 
     let r = Runtime::new().unwrap();
@@ -347,6 +368,7 @@ criterion_group!(benches_select_with_cond, select_builder_with_cond_benchmark);
 criterion_group!(benches_query_with_cond, query_with_cond_benchmark);
 
 criterion_group!(benches_select_subquery, select_builder_with_cond_and_subquery_benchmark);
+criterion_group!(benches_select_from_string_subquery, select_builder_from_string_with_subquery_benchmark);
 criterion_group!(benches_query_subquery, query_with_cond_and_subquery_benchmark);
 
 criterion_group!(benches_select_5, select_builder_with_cond_5_exact_benchmark);
@@ -362,7 +384,7 @@ criterion_main!(
     benches_select_from_expr,
     benches_select_from_string,
     benches_select_with_cond, benches_query_with_cond,
-    benches_select_subquery, benches_query_subquery,
+    benches_select_subquery, benches_select_from_string_subquery, benches_query_subquery,
     benches_select_5, benches_query_5,
     benches_select_without_cond, benches_query_without_cond,
     benches_select_more_options, benches_query_more_options,

@@ -126,8 +126,9 @@ impl From<Condition> for ExtraCond {
 #[cfg(test)]
 mod test {
     use serde::{Deserialize, Serialize};
+    use surrealdb::opt::RecordId;
     use surrealdb::{engine::any::connect, sql::Part};
-    use surrealdb::sql::{Field, Thing, Operator};
+    use surrealdb::sql::{Field, Operator};
     use crate::{cond_vec, op};
     use crate::query::statement::StatementBuilder;
 
@@ -138,7 +139,7 @@ mod test {
     #[derive(Debug, Table, Serialize, Deserialize, PartialEq, Clone)]
     #[table(name = "test")]
     pub struct Test {
-        id: Option<Thing>,
+        id: Option<RecordId>,
         name: String,
         n: i64
     }

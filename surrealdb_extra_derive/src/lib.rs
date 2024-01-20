@@ -20,12 +20,12 @@ pub fn table(input: TokenStream) -> TokenStream {
                 #table_name.to_string()
             }
 
-            fn get_id(&self) -> &Option<::surrealdb::sql::Thing> {
+            fn get_id(&self) -> &Option<::surrealdb::opt::RecordId> {
                 &self.id
             }
 
             fn set_id(&mut self, id: impl Into<String>) {
-                self.id = Some(::surrealdb::sql::Thing::from((Self::TABLE_NAME.to_string(), id.into())));
+                self.id = Some(::surrealdb::opt::RecordId::from((Self::TABLE_NAME.to_string(), id.into())));
             }
         }
     };

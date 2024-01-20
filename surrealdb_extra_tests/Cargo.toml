@@ -1,7 +1,7 @@
 [package]
 name = "surrealdb_extra_tests"
-version = "0.7.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 readme = "crates-io.md"
 documentation = "https://docs.rs/surrealdb_extra"
 repository = "https://github.com/jakin010/surrealdb_extra"

@@ -3,7 +3,7 @@
 //! To use this trait, implement it for your struct representing the table. The struct must have the following attributes:
 //! - `#[derive(Table)]` to automatically derive the implementation of the `Table` trait.
 //! - `#[table(name = "...")]` to specify the name of the table in the database.
-//! - `id: Option<Thing>` needs to be one of the fields
+//! - `id: Option<RecordId>` needs to be one of the fields
 //!
 //! # Example
 //!
@@ -11,7 +11,7 @@
 //! ``` rust
 //!  use serde::{Serialize, Deserialize};
 //!  use surrealdb_extra::table::Table;
-//!  use surrealdb::sql::Thing;
+//!  use surrealdb::opt::RecordId;
 //!  use surrealdb::engine::any::connect;
 //!  use surrealdb::{Surreal, Result};
 //!  use tokio::main;
@@ -22,7 +22,7 @@
 //! #[table(name = "my_table")]
 //! struct MyStruct {
 //!  // id is the only field that is a must id must be of type Option<::surrealdb::sql::Thing>
-//!     id: Option<Thing>,
+//!     id: Option<RecordId>,
 //!     // other fields...
 //!     pub name: String
 //! }
@@ -66,7 +66,7 @@ use ::surrealdb::{Connection, Surreal};
 pub use crate::table::err::TableError;
 
 #[cfg(feature = "query")]
-use surrealdb::sql::Thing;
+use surrealdb::opt::RecordId;
 
 #[cfg(feature = "query")]
 use crate::query::{
@@ -84,7 +84,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     #[deprecated(since="0.5.0", note="Use `TABLE_NAME` instead")]
     fn table_name() -> String;
 
-    fn get_id(&self) -> &Option<::surrealdb::sql::Thing>;
+    fn get_id(&self) -> &Option<::surrealdb::opt::RecordId>;
 
     fn set_id(&mut self, id: impl Into<String>);
 
@@ -119,14 +119,14 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     /// ```rust
     /// use serde::{Deserialize, Serialize};
     /// use serde_with::skip_serializing_none;
-    /// use surrealdb::sql::Thing;
+    /// use surrealdb::opt::RecordId;
     /// use surrealdb_extra::table::Table;
     ///
     /// #[skip_serializing_none]
     /// #[derive(Debug, Table, Serialize, Deserialize)]
     /// #[table(name = "test")]
     /// struct Test {
-    ///     id: Option<Thing>,
+    ///     id: Option<RecordId>,
     /// }
     /// ```
     async fn update<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>> {
@@ -146,7 +146,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
     #[cfg(feature = "query")]
     fn select_builder<C: Connection>(db: &Surreal<C>, id: Option<String>) -> SelectBuilder<C, FilledWhat, NoFields, NoCond> {
         if let Some(id) = id {
-            return db.select_builder().what(Thing::from((Self::TABLE_NAME, id.as_str())))
+            return db.select_builder().what(RecordId::from((Self::TABLE_NAME, id.as_str())))
         }
 
         db.select_builder().what(Self::TABLE_NAME)
