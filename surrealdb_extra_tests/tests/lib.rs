@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::engine::local::{Db, Mem};
 use surrealdb::opt::RecordId;
 use surrealdb::{Error, Surreal};
+use surrealdb::engine::any::{Any, connect};
 use surrealdb_extra::query::statement::StatementBuilder;
 use surrealdb_extra::table::Table;
 
@@ -14,8 +14,8 @@ pub struct Test {
     n: Option<usize>,
 }
 
-async fn database() -> Surreal<Db> {
-    let db = Surreal::new::<Mem>(()).await.unwrap();
+async fn database() -> Surreal<Any> {
+    let db = connect("mem://").await.unwrap();
 
     db.use_ns("ns").use_db("db").await.unwrap();
 
@@ -218,4 +218,31 @@ async fn select_id_name_selected_success() {
     assert!(test_res.id.is_some());
 
     assert_eq!(tc.id, test_res.id);
+}
+
+#[tokio::test]
+async fn create_builder() {
+    let db = database().await;
+
+    let t = Test {
+        id: None,
+        name: "test data".to_string(),
+        ..Test::default()
+    };
+
+    let query = t.create_builder(&db).only().output("name").to_query();
+
+    let res = query.await;
+
+    assert!(res.is_ok());
+
+    let test: Option<Test> = res.unwrap().take(0).unwrap();
+
+    assert!(test.is_some());
+
+    let test = test.unwrap();
+
+    assert!(!test.name.is_empty());
+
+    assert!(test.id.is_none());
 }

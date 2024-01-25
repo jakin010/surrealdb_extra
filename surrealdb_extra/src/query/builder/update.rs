@@ -376,7 +376,7 @@ mod test {
 
         let query = update.statement.into_query();
 
-        assert!(query.is_ok())
+        assert!(query.is_ok());
     }
 
     #[tokio::test]

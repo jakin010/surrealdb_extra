@@ -72,6 +72,7 @@ use surrealdb::opt::RecordId;
 use crate::query::{
     select::SelectBuilder,
     update::UpdateBuilder,
+    create::CreateBuilder,
     statement::StatementBuilder,
     states::{FilledWhat, NoFields, NoCond, FilledData}
 };
@@ -134,7 +135,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
             .update(
                 (
                     Self::TABLE_NAME,
-                    self.get_id().clone().ok_or(TableError::IdEmpty)?.id.clone().to_raw()
+                    self.get_id().clone().ok_or(TableError::IdEmpty)?.id.to_owned().to_raw()
                 )
             )
             .merge(self)
@@ -152,13 +153,13 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         db.select_builder().what(Self::TABLE_NAME)
     }
 
-    /// It auto fills the id (if filled) and the content of the struct if this is not what you want use `UpdateBuilder`
     #[cfg(feature = "query")]
     fn update_builder<C: Connection>(self, db: &Surreal<C>) -> UpdateBuilder<C, FilledWhat, FilledData, NoCond> {
-        if let Some(id) = self.get_id() {
-            return db.update_builder().what(id.clone()).content(self)
-        }
-
         db.update_builder().what(Self::TABLE_NAME).content(self)
+    }
+
+    #[cfg(feature = "query")]
+    fn create_builder<C: Connection>(self, db: &Surreal<C>) -> CreateBuilder<C, FilledWhat, FilledData> {
+        db.create_builder().what(Self::TABLE_NAME).content(self)
     }
 }

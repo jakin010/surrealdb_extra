@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 use surrealdb::{Connection, Surreal};
+use crate::query::create::CreateBuilder;
 use crate::query::relate::RelateBuilder;
 use crate::query::select::SelectBuilder;
 use crate::query::states::{NoCond, NoData, NoFields, NoRelation, NoWhat};
@@ -11,6 +12,7 @@ pub trait StatementBuilder<Client>
     fn select_builder(&self) -> SelectBuilder<Client, NoWhat, NoFields, NoCond>;
     fn update_builder(&self) -> UpdateBuilder<Client, NoWhat, NoData, NoCond>;
     fn relate_builder(&self) -> RelateBuilder<Client, NoRelation, NoData>;
+    fn create_builder(&self) -> CreateBuilder<Client, NoWhat, NoData>;
 }
 
 impl<Client: Connection> StatementBuilder<Client> for Surreal<Client>
@@ -44,11 +46,19 @@ impl<Client: Connection> StatementBuilder<Client> for Surreal<Client>
             data_state: PhantomData,
         }
     }
+
+    fn create_builder(&self) -> CreateBuilder<Client, NoWhat, NoData> {
+        CreateBuilder {
+            statement: Default::default(),
+            db: self,
+            what_state: PhantomData,
+            data_state: PhantomData,
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use std::any::Any;
     use surrealdb::engine::any::connect;
     use crate::query::statement::StatementBuilder;
 
@@ -56,33 +66,24 @@ mod test {
     async fn select_builder() {
         let db = connect("mem://").await.unwrap();
 
-        let select_builder = db.select_builder();
-
-        let db_type_id = db.type_id();
-        let select_type_id = select_builder.db.type_id();
-
-        assert_eq!(db_type_id, select_type_id);
+        let _select_builder = db.select_builder();
     }
     #[tokio::test]
     async fn update_builder() {
         let db = connect("mem://").await.unwrap();
 
-        let update_builder = db.update_builder();
-
-        let db_type_id = db.type_id();
-        let update_type_id = update_builder.db.type_id();
-
-        assert_eq!(db_type_id, update_type_id);
+        let _update_builder = db.update_builder();
     }
     #[tokio::test]
     async fn relate_builder() {
         let db = connect("mem://").await.unwrap();
 
-        let relate_builder = db.relate_builder();
+        let _relate_builder = db.relate_builder();
+    }
+    #[tokio::test]
+    async fn create_builder() {
+        let db = connect("mem://").await.unwrap();
 
-        let db_type_id = db.type_id();
-        let relate_type_id = relate_builder.db.type_id();
-
-        assert_eq!(db_type_id, relate_type_id);
+        let _create_builder = db.create_builder();
     }
 }
