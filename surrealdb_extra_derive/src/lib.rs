@@ -16,10 +16,6 @@ pub fn table(input: TokenStream) -> TokenStream {
         impl Table for #struct_name {
             const TABLE_NAME: &'static str = #table_name;
 
-            fn table_name() -> String {
-                #table_name.to_string()
-            }
-
             fn get_id(&self) -> &Option<::surrealdb::opt::RecordId> {
                 &self.id
             }
