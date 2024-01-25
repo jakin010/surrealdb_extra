@@ -82,9 +82,6 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
 {
     const TABLE_NAME: &'static str;
 
-    #[deprecated(since="0.5.0", note="Use `TABLE_NAME` instead")]
-    fn table_name() -> String;
-
     fn get_id(&self) -> &Option<::surrealdb::opt::RecordId>;
 
     fn set_id(&mut self, id: impl Into<String>);
@@ -153,11 +150,14 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + Sized
         db.select_builder().what(Self::TABLE_NAME)
     }
 
+    // It auto fills the content if this is not what you want use the `UpdateBuilder`
     #[cfg(feature = "query")]
     fn update_builder<C: Connection>(self, db: &Surreal<C>) -> UpdateBuilder<C, FilledWhat, FilledData, NoCond> {
         db.update_builder().what(Self::TABLE_NAME).content(self)
     }
 
+
+    // It auto fills the content if this is not what you want use the `CreateBuilder`
     #[cfg(feature = "query")]
     fn create_builder<C: Connection>(self, db: &Surreal<C>) -> CreateBuilder<C, FilledWhat, FilledData> {
         db.create_builder().what(Self::TABLE_NAME).content(self)
