@@ -84,7 +84,11 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync
 
     fn get_id(&self) -> &Option<::surrealdb::opt::RecordId>;
 
-    fn set_id(&mut self, id: impl Into<String>);
+    fn set_id(&mut self, id: impl Into<::surrealdb::sql::Id>);
+
+    fn create_record_id(id: impl Into<::surrealdb::sql::Id>) -> ::surrealdb::opt::RecordId {
+        ::surrealdb::opt::RecordId::from((Self::TABLE_NAME, id.into()))
+    }
 
     async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>> {
         let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await?;
@@ -92,7 +96,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync
         Ok(s)
     }
 
-    async fn delete<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>> {
+    async fn delete<C: Connection>(db: &Surreal<C>, id: impl Into<String> + Send) -> Result<Option<Self>> {
         let s: Option<Self> = db.delete((Self::TABLE_NAME, id.into())).await?;
 
         Ok(s)
@@ -104,7 +108,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync
         Ok(vec_s)
     }
 
-    async fn get_by_id<C: Connection>(db: &Surreal<C>, id: impl Into<String> + std::marker::Send) -> Result<Option<Self>> {
+    async fn get_by_id<C: Connection>(db: &Surreal<C>, id: impl Into<String> + Send) -> Result<Option<Self>> {
         let s: Option<Self> = db.select((Self::TABLE_NAME, id.into())).await?;
 
         Ok(s)
