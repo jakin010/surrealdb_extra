@@ -2,6 +2,7 @@
 name = "surrealdb_extra"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license = "MIT OR Apache-2.0"
 description = "Adds a orm and query builder on top of surrealdb"
 readme = "crates-io.md"
@@ -11,14 +12,14 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.8.1", path = "../surrealdb_extra_derive" }
-async-trait = "0.1.77"
+surrealdb_extra_derive = { version = "0.9.0", path = "../surrealdb_extra_derive" }
+async-trait = "0.1.81"
 surrealdb = { workspace = true }
 serde = { version = "1.0.195", features = ["derive"] }
-thiserror = "1.0.56"
-anyhow = "1.0.79"
-chrono = "0.4.31"
-paste = { version = "1.0.14", optional = true }
+thiserror = "1.0.62"
+anyhow = "1.0.86"
+chrono = "0.4.38"
+paste = { version = "1.0.15", optional = true }
 
 [features]
 default = ["derive"]
@@ -27,9 +28,9 @@ query = ["derive", "paste"]
 derive = ["table"]
 
 [dev-dependencies]
-serde_with = "3.4.0"
+serde_with = "3.9.0"
 surrealdb = { workspace = true, features = ["kv-mem"] }
-tokio = { version = "1.35.1", features = ["macros"] }
+tokio = { version = "1.38.1", features = ["macros"] }
 
 # docs.rs-specific configuration
 [package.metadata.docs.rs]

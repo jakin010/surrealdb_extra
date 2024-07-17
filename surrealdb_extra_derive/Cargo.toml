@@ -2,6 +2,7 @@
 name = "surrealdb_extra_derive"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license = "MIT OR Apache-2.0"
 description = "Derive crate for surrealdb_extra"
 readme = "crates-io.md"
@@ -14,9 +15,9 @@ categories = ["database", "database-implementations"]
 proc-macro = true
 
 [dependencies]
-quote = "1.0.33"
+quote = "1.0.36"
 surrealdb = { workspace = true }
-syn = { version = "2.0.42", features = ["derive"] }
+syn = { version = "2.0.71", features = ["derive"] }
 
 [dev-dependencies]
 surrealdb_extra = { path = "../surrealdb_extra" }
