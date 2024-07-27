@@ -16,7 +16,9 @@ impl From<&str> for ExtraIdiom {
             .map(|x| Part::from(x))
             .collect();
 
-        let idiom = Idiom(part);
+
+        let mut idiom = Idiom::default();
+        idiom.0 = part;
 
         Self(idiom)
     }
@@ -30,7 +32,8 @@ impl From<String> for ExtraIdiom {
             .map(|x| Part::from(x))
             .collect();
 
-        let idiom = Idiom(part);
+        let mut idiom = Idiom::default();
+        idiom.0 = part;
 
         Self(idiom)
     }

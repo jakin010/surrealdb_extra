@@ -20,7 +20,11 @@ impl From<Fields> for ExtraOutput {
 
 impl From<Vec<Field>> for ExtraOutput {
     fn from(value: Vec<Field>) -> Self {
-        let value = Output::Fields(Fields(value, false));
+        let mut fields = Fields::default();
+        fields.0 = value;
+        fields.1 = false;
+
+        let value = Output::Fields(fields);
 
         Self(value)
     }
@@ -28,7 +32,9 @@ impl From<Vec<Field>> for ExtraOutput {
 
 impl From<Field> for ExtraOutput {
     fn from(value: Field) -> Self {
-        let fields = Fields(vec![value], false);
+        let mut fields = Fields::default();
+        fields.0 = vec![value];
+        fields.1 = false;
 
         Self(Output::Fields(fields))
     }
@@ -38,9 +44,11 @@ macro_rules! to_output_from_extra_field {
     ($x:ty) => {
         impl From<Vec<$x>> for ExtraOutput {
             fn from(value: Vec<$x>) -> Self {
-                let fields = value.into_iter().map(|x|  ExtraField::from(x).0).collect();
+                let vec_fields: Vec<Field> = value.into_iter().map(|x|  ExtraField::from(x).0).collect();
 
-                let fields = Fields(fields, false);
+                let mut fields = Fields::default();
+                fields.0 = vec_fields;
+                fields.1 = false;
 
                 Self(Output::Fields(fields))
             }
@@ -49,7 +57,10 @@ macro_rules! to_output_from_extra_field {
             fn from(value: $x) -> Self {
                 let field = ExtraField::from(value).0;
 
-                let fields = Fields(vec![field], false);
+
+                let mut fields = Fields::default();
+                fields.0 = vec![field];
+                fields.1 = false;
 
                 Self(Output::Fields(fields))
             }

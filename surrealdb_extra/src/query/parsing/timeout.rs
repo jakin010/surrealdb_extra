@@ -12,6 +12,9 @@ impl From<Timeout> for ExtraTimeout {
 
 impl From<time::Duration> for ExtraTimeout {
     fn from(value: time::Duration) -> Self {
-        Self(Timeout(value.into()))
+        let mut timeout = Timeout::default();
+        timeout.0 = value.into();
+        
+        Self(timeout)
     }
 }

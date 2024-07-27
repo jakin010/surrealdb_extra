@@ -29,13 +29,12 @@ impl From<(&str, OrderDirection)> for ExtraOrder {
         let idiom = ExtraIdiom::from(value.0);
         let direction = value.1.to_bool();
 
-        let order = Order {
-            order: idiom.0,
-            random: false,
-            collate: false,
-            numeric: false,
-            direction,
-        };
+        let mut order = Order::default();
+        order.order = idiom.0;
+        order.random = false;
+        order.collate = false;
+        order.numeric = false;
+        order.direction = direction;
 
         Self(order)
     }
@@ -46,13 +45,12 @@ impl From<(String, OrderDirection)> for ExtraOrder {
         let idiom = ExtraIdiom::from(value.0);
         let direction = value.1.to_bool();
 
-        let order = Order {
-            order: idiom.0,
-            random: false,
-            collate: false,
-            numeric: false,
-            direction,
-        };
+        let mut order = Order::default();
+        order.order = idiom.0;
+        order.random = false;
+        order.collate = false;
+        order.numeric = false;
+        order.direction = direction;
 
         Self(order)
     }
@@ -62,13 +60,12 @@ impl From<(Idiom, OrderDirection)> for ExtraOrder {
     fn from(value: (Idiom, OrderDirection)) -> Self {
         let direction = value.1.to_bool();
 
-        let order = Order {
-            order: value.0,
-            random: false,
-            collate: false,
-            numeric: false,
-            direction,
-        };
+        let mut order = Order::default();
+        order.order = value.0;
+        order.random = false;
+        order.collate = false;
+        order.numeric = false;
+        order.direction = direction;
 
         Self(order)
     }

@@ -18,13 +18,19 @@ impl From<Cond> for ExtraCond {
 
 impl From<Value> for ExtraCond {
     fn from(value: Value) -> Self {
-        Self(Cond(value))
+        let mut cond = Cond::default();
+        cond.0 = value;
+
+        Self(cond)
     }
 }
 
 impl From<Expression> for ExtraCond {
     fn from(value: Expression) -> Self {
-        Self(Cond(Value::Expression(Box::new(value))))
+        let mut cond = Cond::default();
+        cond.0 = Value::Expression(Box::new(value));
+
+        Self(cond)
     }
 }
 
@@ -32,7 +38,10 @@ impl From<&str> for ExtraCond {
     fn from(value: &str) -> Self {
         let val = str_to_value(value);
 
-        Self(Cond(val))
+        let mut cond = Cond::default();
+        cond.0 = val;
+
+        Self(cond)
     }
 }
 
@@ -40,56 +49,35 @@ impl From<String> for ExtraCond {
     fn from(value: String) -> Self {
         let val = str_to_value(value);
 
-        Self(Cond(val))
+        let mut cond = Cond::default();
+        cond.0 = val;
+
+        Self(cond)
     }
 }
 
 impl From<Vec<Condition>> for ExtraCond {
     fn from(value: Vec<Condition>) -> Self {
-        if value.is_empty() {
-            return Self(Cond(Value::Null))
-        }
+        let value: VecDeque<Condition> = value.into();
 
-        let mut value: VecDeque<Condition> = value.into();
-
-        let l = value.pop_front().unwrap_or_default().to_value();
-
-        if value.is_empty() {
-            return Self(Cond(l));
-        }
-
-        let o = value.pop_front().unwrap_or_default().to_operator();
-
-        let r = value.pop_front().unwrap_or_default().to_value();
-
-        let mut expr = Expression::Binary { l, o, r };
-
-        while value.len() >= 2 {
-            let o = value.pop_front().unwrap_or_default().to_operator();
-
-            let v = value.pop_front().unwrap_or_default().to_value();
-
-            expr = Expression::Binary {
-                l: Value::Expression(expr.into()),
-                o,
-                r: v
-            };
-        }
-
-        Self(Cond(Value::Expression(Box::new(expr))))
+        value.into()
     }
 }
 
 impl From<VecDeque<Condition>> for ExtraCond {
     fn from(mut value: VecDeque<Condition>) -> Self {
+        let mut cond = Cond::default();
+        
         if value.is_empty() {
-            return Self(Cond(Value::Null))
+            cond.0 = Value::Null;
+            return Self(cond)
         }
 
         let l = value.pop_front().unwrap_or_default().to_value();
 
         if value.is_empty() {
-            return Self(Cond(l));
+            cond.0 = l;
+            return Self(cond);
         }
 
         let o = value.pop_front().unwrap_or_default().to_operator();
@@ -110,16 +98,19 @@ impl From<VecDeque<Condition>> for ExtraCond {
             };
         }
 
-        Self(Cond(Value::Expression(Box::new(expr))))
+        cond.0 = Value::Expression(Box::new(expr));
+        Self(cond)
     }
 }
 
 impl From<Condition> for ExtraCond {
     fn from(value: Condition) -> Self {
-
         let val = value.to_value();
 
-        Self(Cond(val))
+        let mut cond = Cond::default();
+        cond.0 = val;
+
+        Self(cond)
     }
 }
 

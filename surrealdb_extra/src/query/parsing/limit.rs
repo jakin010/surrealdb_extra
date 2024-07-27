@@ -13,12 +13,18 @@ impl From<i64> for ExtraLimit {
     fn from(value: i64) -> Self {
         let val = Value::Number(Number::Int(value));
 
-        Self(Limit(val))
+        let mut limit = Limit::default();
+        limit.0 = val;
+        
+        Self(limit)
     }
 }
 
 impl From<Value> for ExtraLimit {
     fn from(value: Value) -> Self {
-        Self(Limit(value))
+        let mut limit = Limit::default();
+        limit.0 = value;
+        
+        Self(limit)
     }
 }

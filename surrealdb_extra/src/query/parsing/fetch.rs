@@ -1,4 +1,4 @@
-use surrealdb::sql::{Fetch, Idiom};
+use surrealdb::sql::{Fetch, Idiom, Value};
 use crate::query::parsing::idiom::ExtraIdiom;
 
 #[derive(Debug, Clone)]
@@ -14,7 +14,8 @@ impl From<&str> for ExtraFetch {
     fn from(value: &str) -> Self {
         let idiom = ExtraIdiom::from(value).0;
 
-        let fetch = Fetch(idiom);
+        let mut fetch = Fetch::default();
+        fetch.1 = Value::Idiom(idiom);
 
         Self(fetch)
     }
@@ -24,7 +25,8 @@ impl From<String> for ExtraFetch {
     fn from(value: String) -> Self {
         let idiom = ExtraIdiom::from(value).0;
 
-        let fetch = Fetch(idiom);
+        let mut fetch = Fetch::default();
+        fetch.1 = Value::Idiom(idiom);
 
         Self(fetch)
     }
@@ -32,7 +34,17 @@ impl From<String> for ExtraFetch {
 
 impl From<Idiom> for ExtraFetch {
     fn from(value: Idiom) -> Self {
-        let fetch = Fetch(value);
+        let mut fetch = Fetch::default();
+        fetch.1 = Value::Idiom(value);
+
+        Self(fetch)
+    }
+}
+
+impl From<Value> for ExtraFetch {
+    fn from(value: Value) -> Self {
+        let mut fetch = Fetch::default();
+        fetch.1 = value;
 
         Self(fetch)
     }

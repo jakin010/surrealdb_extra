@@ -14,7 +14,8 @@ impl From<&str> for ExtraSplit {
     fn from(value: &str) -> Self {
         let idiom = ExtraIdiom::from(value).0;
 
-        let split = Split(idiom);
+        let mut split = Split::default();
+        split.0 = idiom;
 
         Self(split)
     }
@@ -24,7 +25,8 @@ impl From<String> for ExtraSplit {
     fn from(value: String) -> Self {
         let idiom = ExtraIdiom::from(value).0;
 
-        let split = Split(idiom);
+        let mut split = Split::default();
+        split.0 = idiom;
 
         Self(split)
     }
@@ -32,7 +34,8 @@ impl From<String> for ExtraSplit {
 
 impl From<Idiom> for ExtraSplit {
     fn from(value: Idiom) -> Self {
-        let split = Split(value);
+        let mut split = Split::default();
+        split.0 = value;
 
         Self(split)
     }

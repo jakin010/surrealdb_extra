@@ -54,7 +54,8 @@ macro_rules! op {
     ("⊂") => { ::surrealdb::sql::Operator::AnyInside };
     ("⊄") => { ::surrealdb::sql::Operator::NoneInside };
 
-    (<$x:tt>) => { ::surrealdb::sql::Operator::Knn($x) };
+    (<$x:tt>) => { ::surrealdb::sql::Operator::Knn($x, None) };
+    (<$x:tt>, $t:expr) => { ::surrealdb::sql::Operator::Knn($x, Some($t)) };
 
     ($x:tt) => { 
         $crate::item!(
@@ -66,6 +67,7 @@ macro_rules! op {
 #[cfg(test)]
 mod test {
     use surrealdb::sql::Operator;
+    use surrealdb::sql::index::Distance;
 
     #[test]
     fn op_and() {
@@ -89,6 +91,7 @@ mod test {
 
     #[test]
     fn op_knn() {
-        assert_eq!(op!(<3>), Operator::Knn(3));
+        assert_eq!(op!(<3>), Operator::Knn(3, None));
+        assert_eq!(op!(<3>, Distance::Hamming), Operator::Knn(3, Some(Distance::Hamming)));
     }
 }

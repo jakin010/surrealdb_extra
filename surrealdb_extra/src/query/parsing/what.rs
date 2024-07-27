@@ -11,11 +11,11 @@ impl From<Values> for ExtraValue {
 
 impl From<&str> for ExtraValue {
     fn from(value: &str) -> Self {
-        let values = Values(
-            vec![
-                Value::Table(Table(value.to_string()))
-            ]
-        );
+        let mut table = Table::default();
+        table.0 = value.to_string();
+
+        let mut values = Values::default();
+        values.0 = vec![Value::Table(table)];
 
         ExtraValue(values)
     }
@@ -23,11 +23,11 @@ impl From<&str> for ExtraValue {
 
 impl From<String> for ExtraValue {
     fn from(value: String) -> Self {
-        let values = Values(
-            vec![
-                Value::Table(Table(value))
-            ]
-        );
+        let mut table = Table::default();
+        table.0 = value;
+
+        let mut values = Values::default();
+        values.0 = vec![Value::Table(table)];
 
         ExtraValue(values)
     }
@@ -35,12 +35,10 @@ impl From<String> for ExtraValue {
 
 impl From<RecordId> for ExtraValue {
     fn from(value: RecordId) -> Self {
-        let values = Values(
-            vec![
-                Value::Thing(value)
-            ]
-        );
+        let mut values = Values::default();        
 
+        values.0 = vec![Value::Thing(value)];
+        
         ExtraValue(values)
     }
 }

@@ -13,12 +13,17 @@ impl From<i64> for ExtraStart {
     fn from(value: i64) -> Self {
         let val = Value::Number(Number::Int(value));
 
-        Self(Start(val))
+        let mut start = Start::default();
+        start.0 = val;
+        Self(start)
     }
 }
 
 impl From<Value> for ExtraStart {
     fn from(value: Value) -> Self {
-        Self(Start(value))
+        let mut start = Start::default();
+        start.0 = value;
+        
+        Self(start)
     }
 }

@@ -504,7 +504,9 @@ impl<'r, Client, C> SelectBuilder<'r, Client, FilledWhat, FilledFields, C>
     pub fn explain(self) -> Self {
         let Self { mut statement, db, .. } = self;
 
-        statement.explain = Some(Explain(true));
+        let mut explain = Explain::default();
+        explain.0 = true;
+        statement.explain = Some(explain);
 
         Self {
             statement,

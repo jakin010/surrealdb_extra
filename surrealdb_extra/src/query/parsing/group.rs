@@ -14,7 +14,8 @@ impl From<&str> for ExtraGroup {
     fn from(value: &str) -> Self {
         let idiom = ExtraIdiom::from(value).0;
 
-        let group = Group(idiom);
+        let mut group = Group::default();
+        group.0 = idiom;
 
         Self(group)
     }
@@ -24,7 +25,8 @@ impl From<String> for ExtraGroup {
     fn from(value: String) -> Self {
         let idiom = ExtraIdiom::from(value).0;
 
-        let group = Group(idiom);
+        let mut group = Group::default();
+        group.0 = idiom;
 
         Self(group)
     }
@@ -32,7 +34,8 @@ impl From<String> for ExtraGroup {
 
 impl From<Idiom> for ExtraGroup {
     fn from(value: Idiom) -> Self {
-        let group = Group(value);
+        let mut group = Group::default();
+        group.0 = value;
 
         Self(group)
     }
