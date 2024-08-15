@@ -182,7 +182,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
     ///     // The above builder becomes `UPDATE test CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
+    pub fn content(self, content: impl Serialize + 'static) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
         let Self { mut statement, db, .. } = self;
 
         let val = to_value(content).unwrap_or_default();
