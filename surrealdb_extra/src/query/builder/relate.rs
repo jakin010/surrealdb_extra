@@ -6,7 +6,6 @@ use surrealdb::sql::statements::RelateStatement;
 use surrealdb::sql::{Data, to_value};
 use crate::query::parsing::output::ExtraOutput;
 use crate::query::parsing::set_expression::SetExpression;
-use crate::query::parsing::table::ExtraTable;
 use crate::query::parsing::timeout::ExtraTimeout;
 use crate::query::parsing::value::ExtraValue;
 use crate::query::states::{FilledData, FilledRelation, NoData, NoRelation};
@@ -50,7 +49,7 @@ impl<'r, Client> RelateBuilder<'r, Client, NoRelation, NoData>
     ///     // The above builder becomes `RELATE test:test->test->test2:test2
     ///
     /// }
-    pub fn relation(self, from: impl Into<ExtraValue>, kind: impl Into<ExtraTable>, with: impl Into<ExtraValue>) -> RelateBuilder<'r, Client, FilledRelation, NoData> {
+    pub fn relation(self, from: impl Into<ExtraValue>, kind: impl Into<ExtraValue>, with: impl Into<ExtraValue>) -> RelateBuilder<'r, Client, FilledRelation, NoData> {
         let Self { mut statement, db, .. } = self;
 
         statement.from = from.into().0;
