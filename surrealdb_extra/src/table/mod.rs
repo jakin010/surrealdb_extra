@@ -78,7 +78,7 @@ use crate::query::{
 };
 
 #[async_trait]
-pub trait Table: Serialize + DeserializeOwned + Send + Sync
+pub trait Table: Serialize + DeserializeOwned + Send + Sync where Self: 'static
 {
     const TABLE_NAME: &'static str;
 

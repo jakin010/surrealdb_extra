@@ -126,7 +126,7 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize) -> RelateBuilder<'r, Client, FilledRelation, FilledData> {
+    pub fn content(self, content: impl Serialize + 'static) -> RelateBuilder<'r, Client, FilledRelation, FilledData> {
         let Self { mut statement, db, .. } = self;
 
         let val = to_value(content).unwrap_or_default();

@@ -174,7 +174,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
     ///     // The above builder becomes `CREATE test CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
+    pub fn content(self, content: impl Serialize + 'static) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
         let Self { mut statement, db, .. } = self;
 
         let val = to_value(content).unwrap_or_default();
