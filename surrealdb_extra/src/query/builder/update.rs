@@ -43,7 +43,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     /// Example:
     /// ```rust
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing as RecordId;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
     /// #[tokio::main]

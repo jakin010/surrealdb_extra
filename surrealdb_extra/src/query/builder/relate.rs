@@ -42,10 +42,10 @@ impl<'r, Client> RelateBuilder<'r, Client, NoRelation, NoData>
     ///
     /// #[tokio::main]
     /// async fn main() {
-    ///     use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing;
     ///     let db = connect("mem://").await.unwrap();
     ///
-    ///     db.relate_builder().relation(RecordId::from(("test", "test")), "test", RecordId::from(("test2", "test2")));
+    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
     ///     // The above builder becomes `RELATE test:test->test->test2:test2
     ///
     /// }
@@ -75,16 +75,17 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
     /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
     /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb::sql::Thing;
     ///
     /// #[tokio::main]
     /// async fn main() {
-    ///     use surrealdb::opt::RecordId;
-    ///     let db = connect("mem://").await.unwrap();
     ///
-    ///     db.relate_builder().relation(RecordId::from(("test", "test")), "test", RecordId::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test")]);
+    ///
+    ///     let db = connect("mem://").await.unwrap();
+    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test")]);
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test'
     ///
-    ///     db.relate_builder().relation(RecordId::from(("test", "test")), "test", RecordId::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test', test2 = 'test2'
     ///
     /// }
@@ -110,7 +111,7 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
     /// use serde::Serialize;
     /// use surrealdb::engine::any::connect;
     /// use surrealdb_extra::query::statement::StatementBuilder;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing;
     ///
     /// #[derive(Serialize)]
     /// pub struct Test {
@@ -120,8 +121,9 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
     /// #[tokio::main]
     /// async fn main() {
     ///
-    ///     let db = connect("mem://").await.unwrap();
-    ///     db.relate_builder().relation(RecordId::from(("test", "test")), "test", RecordId::from(("test2", "test2"))).content(Test { test: "test".to_string(), magic: true });
+    ///
+    /// let db = connect("mem://").await.unwrap();
+    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).content(Test { test: "test".to_string(), magic: true });
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 CONTENT { test: "test", magic: true }
     ///
     /// }
@@ -212,7 +214,7 @@ impl<'r, Client, D> RelateBuilder<'r, Client, FilledRelation, D>
 mod test {
     use surrealdb::engine::any::{Any, connect};
     use surrealdb::opt::IntoQuery;
-    use surrealdb::opt::RecordId;
+    use surrealdb::sql::Thing as RecordId;
     use surrealdb::sql::Operator;
     use surrealdb::Surreal;
     use crate::query::statement::StatementBuilder;

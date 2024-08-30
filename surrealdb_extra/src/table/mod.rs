@@ -11,7 +11,7 @@
 //! ``` rust
 //!  use serde::{Serialize, Deserialize};
 //!  use surrealdb_extra::table::Table;
-//!  use surrealdb::opt::RecordId;
+//!  use surrealdb::sql::Thing as RecordId;
 //!  use surrealdb::engine::any::connect;
 //!  use surrealdb::{Surreal, Result};
 //!  use tokio::main;
@@ -43,7 +43,7 @@
 //!
 //!     let updated_struct: Option<MyStruct> = updated_struct.update(&db).await.unwrap();
 //!
-//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(&db, updated_struct.unwrap().id.unwrap().id.to_raw()).await.unwrap();
+//!     let deleted_struct: Option<MyStruct> = MyStruct::delete(&db, updated_struct.unwrap().id.unwrap().to_raw()).await.unwrap();
 //!
 //!     let get_all: Vec<MyStruct> = MyStruct::get_all(&db).await.unwrap();
 //!
@@ -66,7 +66,7 @@ use ::surrealdb::{Connection, Surreal};
 pub use crate::table::err::TableError;
 
 #[cfg(feature = "query")]
-use surrealdb::opt::RecordId;
+use surrealdb::sql::Thing as RecordId;
 
 #[cfg(feature = "query")]
 use crate::query::{
@@ -82,12 +82,12 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync where Self: 'static
 {
     const TABLE_NAME: &'static str;
 
-    fn get_id(&self) -> &Option<::surrealdb::opt::RecordId>;
+    fn get_id(&self) -> &Option<::surrealdb::sql::Thing>;
 
     fn set_id(&mut self, id: impl Into<::surrealdb::sql::Id>);
 
-    fn create_record_id(id: impl Into<::surrealdb::sql::Id>) -> ::surrealdb::opt::RecordId {
-        ::surrealdb::opt::RecordId::from((Self::TABLE_NAME, id.into()))
+    fn create_record_id(id: impl Into<::surrealdb::sql::Id>) -> ::surrealdb::sql::Thing {
+        ::surrealdb::sql::Thing::from((Self::TABLE_NAME, id.into()))
     }
 
     async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>> {
@@ -121,7 +121,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync where Self: 'static
     /// ```rust
     /// use serde::{Deserialize, Serialize};
     /// use serde_with::skip_serializing_none;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing as RecordId;
     /// use surrealdb_extra::table::Table;
     ///
     /// #[skip_serializing_none]

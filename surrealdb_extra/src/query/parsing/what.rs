@@ -1,4 +1,4 @@
-use surrealdb::{opt::RecordId, sql::{Table, Value, Values}};
+use surrealdb::{sql::{Table, Value, Values, Thing as RecordId}};
 
 #[derive(Debug, Clone)]
 pub struct ExtraValue(pub Values);

@@ -8,7 +8,7 @@ members = [
 ]
 
 [workspace.dependencies]
-surrealdb = { package = "surrealdb-alpha", version = "2.0.9" }
+surrealdb = { package = "surrealdb-beta", version = "2.0.0" }
 
 [workspace.package]
 version = "0.9.0"

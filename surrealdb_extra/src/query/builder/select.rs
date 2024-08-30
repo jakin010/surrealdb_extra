@@ -86,7 +86,7 @@ impl<'r, Client> SelectBuilder<'r, Client, NoWhat, NoFields, NoCond>
     /// Example:
     /// ```rust
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing as RecordId;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
     /// #[tokio::main]
@@ -527,8 +527,8 @@ impl<'r, Client, C> SelectBuilder<'r, Client, FilledWhat, FilledFields, C>
 mod test {
     use surrealdb::engine::any::{Any, connect};
     use surrealdb::opt::IntoQuery;
-    use surrealdb::opt::RecordId;
-    use surrealdb::sql::{Field, Idiom, Value};
+    use surrealdb::sql::{Field, Idiom, Thing, Value};
+    use surrealdb::sql::Value::Thing;
     use super::*;
 
     async fn db() -> Surreal<Any> {
@@ -554,7 +554,7 @@ mod test {
     async fn select_thing() {
         let db = db().await;
 
-        let select = SelectBuilder::new(&db).what(RecordId::from(("test", "test")));
+        let select = SelectBuilder::new(&db).what(Thing::from(("test", "test")));
 
         let query = select.statement.into_query();
 
@@ -565,7 +565,7 @@ mod test {
     async fn select_all_field() {
         let db = db().await;
 
-        let select = SelectBuilder::new(&db).what(RecordId::from(("test", "test"))).field(Field::All);
+        let select = SelectBuilder::new(&db).what(Thing::from(("test", "test"))).field(Field::All);
 
         let query = select.statement.into_query();
 
@@ -576,7 +576,7 @@ mod test {
     async fn select_str_fields() {
         let db = db().await;
 
-        let select = SelectBuilder::new(&db).what(RecordId::from(("test", "test"))).field("test");
+        let select = SelectBuilder::new(&db).what(Thing::from(("test", "test"))).field("test");
 
         let query = select.statement.into_query();
 

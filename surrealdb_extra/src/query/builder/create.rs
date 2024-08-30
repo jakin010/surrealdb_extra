@@ -40,15 +40,15 @@ impl<'r, Client> CreateBuilder<'r, Client, NoWhat, NoData>
     /// Example:
     /// ```rust
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb::opt::RecordId;
     /// use surrealdb_extra::query::create::CreateBuilder;
+    /// use surrealdb::sql::Thing;
     ///
     /// #[tokio::main]
     /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
+    /// let db = connect("mem://").await.unwrap();
     ///     CreateBuilder::new(&db).what("test");
     ///
-    ///     CreateBuilder::new(&db).what(RecordId::from(("test", "test")));
+    ///     CreateBuilder::new(&db).what(Thing::from(("test", "test")));
     /// }
     /// ```
     ///
