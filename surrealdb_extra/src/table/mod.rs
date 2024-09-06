@@ -38,7 +38,7 @@
 //!
 //!     let created_struct = my_struct.create(&db).await.unwrap();
 //!
-//!     let mut updated_struct = created_struct.first().unwrap().clone();
+//!     let mut updated_struct = created_struct.unwrap().clone();
 //!     updated_struct.name = "test".to_string();
 //!
 //!     let updated_struct: Option<MyStruct> = updated_struct.update(&db).await.unwrap();
@@ -90,8 +90,8 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync where Self: 'static
         ::surrealdb::sql::Thing::from((Self::TABLE_NAME, id.into()))
     }
 
-    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>> {
-        let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await?;
+    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>> {
+        let s: Option<Self> = db.create(Self::TABLE_NAME).content(self).await?;
 
         Ok(s)
     }
