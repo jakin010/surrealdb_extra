@@ -73,7 +73,6 @@ use crate::query::{
     select::SelectBuilder,
     update::UpdateBuilder,
     create::CreateBuilder,
-    statement::StatementBuilder,
     states::{FilledWhat, NoFields, NoCond, FilledData}
 };
 
@@ -146,24 +145,24 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + 'static
     }
 
     #[cfg(feature = "query")]
-    fn select_builder<C: Connection>(db: &Surreal<C>, id: Option<String>) -> SelectBuilder<C, FilledWhat, NoFields, NoCond> {
+    fn select_builder<C: Connection>(id: Option<String>) -> SelectBuilder<FilledWhat, NoFields, NoCond> {
         if let Some(id) = id {
-            return db.select_builder().what(Thing::from((Self::TABLE_NAME, id.as_str())))
+            return SelectBuilder::new().what(Thing::from((Self::TABLE_NAME, id.as_str())))
         }
 
-        db.select_builder().what(Self::TABLE_NAME)
+        SelectBuilder::new().what(Self::TABLE_NAME)
     }
 
     // It auto fills the content if this is not what you want use the `UpdateBuilder`
     #[cfg(feature = "query")]
-    fn update_builder<C: Connection>(self, db: &Surreal<C>) -> UpdateBuilder<C, FilledWhat, FilledData, NoCond> {
-        db.update_builder().what(Self::TABLE_NAME).content(self)
+    fn update_builder(self) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
+        UpdateBuilder::new().what(Self::TABLE_NAME).content(self)
     }
 
 
     // It auto fills the content if this is not what you want use the `CreateBuilder`
     #[cfg(feature = "query")]
-    fn create_builder<C: Connection>(self, db: &Surreal<C>) -> CreateBuilder<C, FilledWhat, FilledData> {
-        db.create_builder().what(Self::TABLE_NAME).content(self)
+    fn create_builder(self) -> CreateBuilder<FilledWhat, FilledData> {
+        CreateBuilder::new().what(Self::TABLE_NAME).content(self)
     }
 }

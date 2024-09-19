@@ -20,3 +20,9 @@ impl From<String> for ExtraTable {
         ExtraTable(Value::Table(table))
     }
 }
+
+impl From<Value> for ExtraTable {
+    fn from(value: Value) -> Self {
+        ExtraTable(value)
+    }
+}

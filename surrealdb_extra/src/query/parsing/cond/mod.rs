@@ -119,7 +119,7 @@ mod test {
     use surrealdb::{engine::any::connect, sql::Part};
     use surrealdb::sql::{Field, Operator};
     use crate::{cond_vec, op};
-    use crate::query::statement::StatementBuilder;
+    use crate::query::select::SelectBuilder;
 
     use crate::table::Table;
 
@@ -160,7 +160,7 @@ mod test {
 
         assert_eq!(vec1_t.len(), 1);
 
-        let select = db.select_builder().what(Test::TABLE_NAME).field("name").field("n").condition(cond_vec![("n", Operator::MoreThan, "$num")]).to_query().bind(("num", 9));
+        let select = SelectBuilder::new().what(Test::TABLE_NAME).field("name").field("n").condition(cond_vec![("n", Operator::MoreThan, "$num")]).to_query(&db).bind(("num", 9));
         let mut select_res = select.await.unwrap();
         let vec2_t: Vec<Test> = select_res.take(0).unwrap();
 
@@ -197,7 +197,7 @@ mod test {
         let _ = t2.clone().create(&db).await.unwrap();
         let _ = t3.clone().create(&db).await.unwrap();
 
-        let select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
+        let select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
             ("name", Operator::Equal, "$name"),
                 Operator::And,
             ("n", Operator::MoreThan, "$n"),
@@ -209,7 +209,7 @@ mod test {
             ("n", Operator::MoreThan, "$n"),
                 Operator::And,
             ("n", Operator::MoreThan, "$n"),
-        ]).to_query()
+        ]).to_query(&db)
             .bind(("name", "test"))
             .bind(("n", 3));
 

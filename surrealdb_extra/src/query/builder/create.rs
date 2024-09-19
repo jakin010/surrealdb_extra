@@ -13,23 +13,17 @@ use crate::query::parsing::what::ExtraValue;
 use crate::query::states::{FilledData, FilledWhat, NoData, NoWhat};
 
 #[derive(Debug, Clone)]
-pub struct CreateBuilder<'r, Client, T, D>
-    where Client: Connection
-{
+pub struct CreateBuilder<T, D> {
     pub statement: CreateStatement,
-    pub(crate) db: &'r Surreal<Client>,
     pub(crate) what_state: PhantomData<T>,
     pub(crate) data_state: PhantomData<D>,
 }
 
 
-impl<'r, Client> CreateBuilder<'r, Client, NoWhat, NoData>
-    where Client: Connection
-{
-    pub fn new(db: &'r Surreal<Client>) -> Self {
+impl CreateBuilder<NoWhat, NoData> {
+    pub fn new() -> Self {
         Self {
             statement: Default::default(),
-            db,
             what_state: Default::default(),
             data_state: Default::default(),
         }
@@ -39,40 +33,34 @@ impl<'r, Client> CreateBuilder<'r, Client, NoWhat, NoData>
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::create::CreateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
-    ///     CreateBuilder::new(&db).what("test");
+    /// fn main() {
+    ///     CreateBuilder::new().what("test");
     ///
-    ///     CreateBuilder::new(&db).what(Thing::from(("test", "test")));
+    ///     CreateBuilder::new().what(Thing::from(("test", "test")));
     /// }
     /// ```
     ///
     /// You can also use the Value type inside surrealdb for more complex requests
-    pub fn what(self, what: impl Into<ExtraValue>) -> CreateBuilder<'r, Client, FilledWhat, NoData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn what(self, what: impl Into<ExtraValue>) -> CreateBuilder<FilledWhat, NoData> {
+        let Self { mut statement, .. } = self;
 
         statement.what = what.into().0;
 
         CreateBuilder {
             statement,
-            db,
             what_state: Default::default(),
             data_state: Default::default(),
         }
     }
 }
 
-impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
-    where Client: Connection
-{
+impl CreateBuilder<FilledWhat, NoData> {
     /// This function is for `SET` || `UNSET` || `MERGE` and more
-    pub fn data(self, data: impl Into<ExtraData>) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn data(self, data: impl Into<ExtraData>) -> CreateBuilder<FilledWhat, FilledData> {
+        let Self { mut statement, .. } = self;
 
         let data = data.into().0;
 
@@ -80,7 +68,6 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
 
         CreateBuilder {
             statement,
-            db,
             what_state: Default::default(),
             data_state: Default::default(),
         }
@@ -90,23 +77,19 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::create::CreateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
-    ///
-    ///     db.create_builder().what("test").set(vec![("test", Operator::Equal, "test")]);
+    /// fn main() {
+    ///     CreateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]);
     ///     // The above builder becomes `CREATE test SET test = 'test'
     ///
-    ///     db.create_builder().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    ///     CreateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
     ///     // The above builder becomes `CREATE test SET test = 'test', test2 = 'test2'
     ///
     /// }
-    pub fn set(self, set: impl Into<SetExpression>) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn set(self, set: impl Into<SetExpression>) -> CreateBuilder<FilledWhat, FilledData> {
+        let Self { mut statement, .. } = self;
 
         let set = set.into().0;
 
@@ -114,7 +97,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
 
         CreateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
@@ -124,22 +107,18 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::create::CreateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
-    ///
-    ///     db.create_builder().what("test").unset(vec!["test"]);
+    /// fn main() {
+    ///     CreateBuilder::new().what("test").unset(vec!["test"]);
     ///     // The above builder becomes `CREATE test UNSET test
     ///
-    ///     db.create_builder().what("test").unset(vec!["test", "test"]);
+    ///     CreateBuilder::new().what("test").unset(vec!["test", "test"]);
     ///     // The above builder becomes `CREATE test UNSET test, test
     ///
     /// }
-    pub fn unset(self, set: impl Into<UnsetExpression>) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn unset(self, set: impl Into<UnsetExpression>) -> CreateBuilder<FilledWhat, FilledData> {
+        let Self { mut statement, .. } = self;
 
         let set = set.into().0;
 
@@ -147,7 +126,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
 
         CreateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
@@ -158,24 +137,21 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
     /// Example:
     /// ```rust
     /// use serde::Serialize;
-    /// use surrealdb::engine::any::connect;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::create::CreateBuilder;
     ///
     /// #[derive(Serialize)]
     /// pub struct Test {
     ///     test: String,
     ///     magic: bool
     /// }
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
     ///
-    ///     db.create_builder().what("test").content(Test { test: "test".to_string(), magic: true });
+    /// fn main() {
+    ///     CreateBuilder::new().what("test").content(Test { test: "test".to_string(), magic: true });
     ///     // The above builder becomes `CREATE test CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize + 'static) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn content(self, content: impl Serialize + 'static) -> CreateBuilder<FilledWhat, FilledData> {
+        let Self { mut statement, .. } = self;
 
         let val = to_value(content).unwrap_or_default();
 
@@ -183,24 +159,22 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
 
         CreateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
     }
 }
 
-impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, FilledData>
-    where Client: Connection
-{
+impl CreateBuilder<FilledWhat, FilledData> {
     pub fn only(self) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         statement.only = true;
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
@@ -208,7 +182,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, FilledData>
 
     /// This function is for `RETURN`
     pub fn output(self, output: impl Into<ExtraOutput>) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         let output = output.into().0;
 
@@ -216,7 +190,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, FilledData>
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
@@ -224,7 +198,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, FilledData>
 
     /// You can also use the Timeout type inside surrealdb or Duration inside standard for more complex requests
     pub fn timeout(self, timeout: impl Into<ExtraTimeout>) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         let timeout = timeout.into().0;
 
@@ -232,79 +206,63 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, FilledData>
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
     }
 
     pub fn parallel(self) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         statement.parallel = true;
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
         }
     }
 
-    pub fn to_query(self) -> Query<'r, Client> {
-        self.db.query(self.statement)
+    /// Converts the builder to query type
+    pub fn to_query(self, db: &Surreal<impl Connection>) -> Query<impl Connection> {
+        db.query(self.statement)
     }
 }
 
 #[cfg(test)]
 mod test {
-    use surrealdb::engine::any::{Any, connect};
     use surrealdb::opt::IntoQuery;
     use crate::op;
-    use crate::query::statement::StatementBuilder;
     use super::*;
-
-    async fn db() -> Surreal<Any> {
-        let db = connect("mem://").await.unwrap();
-
-        db.use_ns("test").use_db("test").await.unwrap();
-
-        db
-    }
-
     #[derive(Serialize)]
     struct Test {
         test1: String,
         test2: i32
     }
 
-    #[tokio::test]
-    async fn init() {
-        let db = db().await;
-
-        let create_builder = CreateBuilder::new(&db).what("test");
+    #[test]
+    fn init() {
+        let create_builder = CreateBuilder::new().what("test");
 
         let query = create_builder.statement.into_query();
 
         assert!(query.is_ok());
     }
 
-    #[tokio::test]
-    async fn with_set() {
-        let db = db().await;
-
-        let create_builder = db.create_builder().what("test").set(vec![("test", op!(+=), 4)]);
+    #[test]
+    fn with_set() {
+        let create_builder = CreateBuilder::new().what("test").set(vec![("test", op!(+=), 4)]);
 
         let query = create_builder.statement.into_query();
 
         assert!(query.is_ok());
     }
 
-    #[tokio::test]
-    async fn with_content() {
-        let db = db().await;
-
-        let create_builder = db.create_builder().what("test").content(Test {
+    #[test]
+    fn with_content() {
+        let create_builder = CreateBuilder::new().what("test").content(Test {
             test1: "test".to_string(),
             test2: -55
         });

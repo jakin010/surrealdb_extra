@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 use surrealdb::{Error, Surreal};
 use surrealdb::engine::any::{Any, connect};
-use surrealdb_extra::query::statement::StatementBuilder;
+use surrealdb_extra::query::select::SelectBuilder;
 use surrealdb_extra::table::Table;
 
 #[allow(dead_code)]
@@ -162,7 +162,7 @@ async fn select_field() {
     let tc = t.create(&db).await.unwrap();
     let tc = tc.unwrap().clone();
 
-    let mut q = db.select_builder().what(Test::TABLE_NAME).field("name").to_query().await.unwrap();
+    let mut q = SelectBuilder::new().what(Test::TABLE_NAME).field("name").to_query(&db).await.unwrap();
 
     let res: Vec<Test> = q.take(0).unwrap();
 
@@ -187,7 +187,7 @@ async fn select_id_name_not_selected_error() {
 
     let _tc = t.create(&db).await.unwrap();
 
-    let mut q = db.select_builder().what(Test::TABLE_NAME).field("id").to_query().await.unwrap();
+    let mut q = SelectBuilder::new().what(Test::TABLE_NAME).field("id").to_query(&db).await.unwrap();
 
     let res: Result<Vec<Test>, Error> = q.take(0);
 
@@ -207,7 +207,7 @@ async fn select_id_name_selected_success() {
     let tc = t.create(&db).await.unwrap();
     let tc = tc.unwrap().clone();
 
-    let mut q = db.select_builder().what(Test::TABLE_NAME).field("id").field("name").to_query().await.unwrap();
+    let mut q = SelectBuilder::new().what(Test::TABLE_NAME).field("id").field("name").to_query(&db).await.unwrap();
 
     let res: Vec<Test> = q.take(0).unwrap();
 
@@ -230,7 +230,7 @@ async fn create_builder() {
         ..Test::default()
     };
 
-    let query = t.create_builder(&db).only().output("name").to_query();
+    let query = t.create_builder().only().output("name").to_query(&db);
 
     let res = query.await;
 

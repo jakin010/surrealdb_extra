@@ -15,23 +15,17 @@ use crate::query::states::{FilledCond, FilledData, FilledWhat, NoCond, NoData, N
 
 
 #[derive(Debug, Clone)]
-pub struct UpdateBuilder<'r, Client, T, D, C>
-    where Client: Connection
-{
+pub struct UpdateBuilder<T, D, C> {
     pub statement: UpdateStatement,
-    pub(crate) db: &'r Surreal<Client>,
     pub(crate) what_state: PhantomData<T>,
     pub(crate) data_state: PhantomData<D>,
     pub(crate) cond_state: PhantomData<C>,
 }
 
-impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
-    where Client: Connection
-{
-    pub fn new(db: &'r Surreal<Client>) -> Self {
+impl UpdateBuilder<NoWhat, NoData, NoCond> {
+    pub fn new() -> Self {
         Self {
             statement: Default::default(),
-            db,
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -46,24 +40,21 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
-    ///     UpdateBuilder::new(&db).what("test");
+    /// fn main() {
+    ///     UpdateBuilder::new().what("test");
     ///
-    ///     UpdateBuilder::new(&db).what(Thing::from(("test", "test")));
+    ///     UpdateBuilder::new().what(Thing::from(("test", "test")));
     /// }
     /// ```
     ///
     /// You can also use the Value type inside surrealdb for more complex requests
-    pub fn what(self, what: impl Into<ExtraValue>) -> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond> {
-        let Self { mut statement, db, .. } = self;
+    pub fn what(self, what: impl Into<ExtraValue>) -> UpdateBuilder<FilledWhat, NoData, NoCond> {
+        let Self { mut statement, .. } = self;
 
         statement.what = what.into().0;
 
         UpdateBuilder {
             statement,
-            db,
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -71,13 +62,11 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     }
 }
 
-impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
-    where Client: Connection
-{
+impl UpdateBuilder<FilledWhat, NoData, NoCond> {
 
     /// This function is for `SET` || `UNSET` || `MERGE` and more
-    pub fn data(self, data: impl Into<ExtraData>) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
-        let Self { mut statement, db, .. } = self;
+    pub fn data(self, data: impl Into<ExtraData>) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
+        let Self { mut statement, .. } = self;
 
         let data = data.into().0;
 
@@ -85,7 +74,6 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
 
         UpdateBuilder {
             statement,
-            db,
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -96,23 +84,19 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
-    ///
-    ///     db.update_builder().what("test").set(vec![("test", Operator::Equal, "test")]);
+    /// fn main() {
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test'
     ///
-    ///     db.update_builder().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test', test2 = 'test2'
     ///
     /// }
-    pub fn set(self, set: impl Into<SetExpression>) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
-        let Self { mut statement, db, .. } = self;
+    pub fn set(self, set: impl Into<SetExpression>) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
+        let Self { mut statement, .. } = self;
 
         let set = set.into().0;
 
@@ -120,7 +104,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
 
         UpdateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -131,22 +115,18 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
-    ///
-    ///     db.update_builder().what("test").unset(vec!["test"]);
+    /// fn main() {
+    ///     UpdateBuilder::new().what("test").unset(vec!["test"]);
     ///     // The above builder becomes `UPDATE test UNSET test
     ///
-    ///     db.update_builder().what("test").unset(vec!["test", "test"]);
+    ///     UpdateBuilder::new().what("test").unset(vec!["test", "test"]);
     ///     // The above builder becomes `UPDATE test UNSET test, test
     ///
     /// }
-    pub fn unset(self, set: impl Into<UnsetExpression>) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
-        let Self { mut statement, db, .. } = self;
+    pub fn unset(self, set: impl Into<UnsetExpression>) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
+        let Self { mut statement, .. } = self;
 
         let set = set.into().0;
 
@@ -154,7 +134,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
 
         UpdateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -166,24 +146,21 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
     /// Example:
     /// ```rust
     /// use serde::Serialize;
-    /// use surrealdb::engine::any::connect;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
     /// #[derive(Serialize)]
     /// pub struct Test {
     ///     test: String,
     ///     magic: bool
     /// }
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let db = connect("mem://").await.unwrap();
     ///
-    ///     db.update_builder().what("test").content(Test { test: "test".to_string(), magic: true });
+    /// fn main() {
+    ///     UpdateBuilder::new().what("test").content(Test { test: "test".to_string(), magic: true });
     ///     // The above builder becomes `UPDATE test CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize + 'static) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
-        let Self { mut statement, db, .. } = self;
+    pub fn content(self, content: impl Serialize + 'static) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
+        let Self { mut statement, .. } = self;
 
         let val = to_value(content).unwrap_or_default();
 
@@ -191,7 +168,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
 
         UpdateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -199,46 +176,40 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
     }
 }
 
-impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond>
-    where Client: Connection
-{
+impl UpdateBuilder<FilledWhat, FilledData, NoCond> {
     /// This function is for `WHERE`
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
     /// use surrealdb_extra::{cond_vec, op};
     /// use surrealdb_extra::query::parsing::cond::Condition;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///
-    ///     let db = connect("mem://").await.unwrap();
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
+    /// fn main() {
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test`
     ///
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![(Operator::Not, "test")]);
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![(Operator::Not, "test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE !test`
     ///
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", op!(>), "$test")]);
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", op!(>), "$test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test > $test`
     ///
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", Operator::Equal, "$test")]);
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", Operator::Equal, "$test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test = $test`
     ///
     ///     // For multiple conditions the vector `cond_vec![]` is recommended for usage
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")])
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")])
     ///     .condition(cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test")]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
     ///
     ///     // Other method of using the multi conditions
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
     ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test AND name <= $name`
     ///
     ///     // It is also possible to type the condition like normal
-    ///     UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")])
+    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")])
     ///     .condition("test1 = $test1 AND test2 = $test2 or test or !test");
     ///      // The above builder becomes `UPDATE test SET test = 'test' WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
     ///
@@ -248,8 +219,8 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond>
     /// ## The fastest way to query is to use the string format for conditions at least from benchmarks
     ///
     /// You can also use the Cond/Value type inside surrealdb for more complex requests
-    pub fn condition(self, cond: impl Into<ExtraCond>) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, FilledCond> {
-        let Self { mut statement, db, .. } = self;
+    pub fn condition(self, cond: impl Into<ExtraCond>) -> UpdateBuilder<FilledWhat, FilledData, FilledCond> {
+        let Self { mut statement, .. } = self;
 
         let cond = cond.into().0;
 
@@ -257,7 +228,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond>
 
         UpdateBuilder {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -265,17 +236,15 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond>
     }
 }
 
-impl<'r, Client, C> UpdateBuilder<'r, Client, FilledWhat, FilledData, C>
-    where Client: Connection
-{
+impl<C> UpdateBuilder<FilledWhat, FilledData, C> {
     pub fn only(self) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         statement.only = true;
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -284,7 +253,7 @@ impl<'r, Client, C> UpdateBuilder<'r, Client, FilledWhat, FilledData, C>
 
     /// This function is for `RETURN`
     pub fn output(self, output: impl Into<ExtraOutput>) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         let output = output.into().0;
 
@@ -292,7 +261,7 @@ impl<'r, Client, C> UpdateBuilder<'r, Client, FilledWhat, FilledData, C>
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -301,7 +270,7 @@ impl<'r, Client, C> UpdateBuilder<'r, Client, FilledWhat, FilledData, C>
 
     /// You can also use the Timeout type inside surrealdb or Duration inside standard for more complex requests
     pub fn timeout(self, timeout: impl Into<ExtraTimeout>) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         let timeout = timeout.into().0;
 
@@ -309,7 +278,7 @@ impl<'r, Client, C> UpdateBuilder<'r, Client, FilledWhat, FilledData, C>
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
@@ -317,39 +286,31 @@ impl<'r, Client, C> UpdateBuilder<'r, Client, FilledWhat, FilledData, C>
     }
 
     pub fn parallel(self) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         statement.parallel = true;
 
         Self {
             statement,
-            db,
+
             what_state: Default::default(),
             data_state: Default::default(),
             cond_state: Default::default(),
         }
     }
 
-    pub fn to_query(self) -> Query<'r, Client> {
-        self.db.query(self.statement)
+    /// Converts the builder to query type
+    pub fn to_query(self, db: &Surreal<impl Connection>) -> Query<impl Connection> {
+        db.query(self.statement)
     }
 }
 
 #[cfg(test)]
 mod test {
-    use surrealdb::engine::any::{Any, connect};
     use surrealdb::opt::IntoQuery;
     use surrealdb::sql::Operator;
     use serde::Serialize;
     use super::*;
-
-    async fn db() -> Surreal<Any> {
-        let db = connect("mem://").await.unwrap();
-
-        db.use_ns("test").use_db("test").await.unwrap();
-
-        db
-    }
 
     #[derive(Serialize)]
     struct Test {
@@ -357,49 +318,41 @@ mod test {
         test2: String
     }
 
-    #[tokio::test]
-    async fn update_builder() {
-        let db = db().await;
-
-        let update = UpdateBuilder::new(&db).what("test");
+    #[test]
+    fn update_builder() {
+        let update = UpdateBuilder::new().what("test");
 
         let query = update.statement.into_query();
 
         assert!(query.is_ok())
     }
 
-    #[tokio::test]
-    async fn update_builder_with_set_and_cond() {
-        let db = db().await;
-
-        let update = UpdateBuilder::new(&db).what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
+    #[test]
+    fn update_builder_with_set_and_cond() {
+        let update = UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
 
         let query = update.statement.into_query();
 
         assert!(query.is_ok());
     }
 
-    #[tokio::test]
-    async fn update_builder_with_unset_and_cond() {
-        let db = db().await;
-
-        let update = UpdateBuilder::new(&db).what("test").unset(vec!["test", "test"]).condition("test");
+    #[test]
+    fn update_builder_with_unset_and_cond() {
+        let update = UpdateBuilder::new().what("test").unset(vec!["test", "test"]).condition("test");
 
         let query = update.statement.into_query();
 
         assert!(query.is_ok())
     }
 
-    #[tokio::test]
-    async fn update_builder_with_content() {
-        let db = db().await;
-
+    #[test]
+    fn update_builder_with_content() {
         let test = Test {
             test1: "test1".to_string(),
             test2: "test2".to_string(),
         };
 
-        let update = UpdateBuilder::new(&db).what("test").content(test);
+        let update = UpdateBuilder::new().what("test").content(test);
 
         let query = update.statement.into_query();
 

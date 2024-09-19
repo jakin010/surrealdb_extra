@@ -12,22 +12,16 @@ use crate::query::parsing::value::ExtraValue;
 use crate::query::states::{FilledData, FilledRelation, NoData, NoRelation};
 
 #[derive(Debug, Clone)]
-pub struct RelateBuilder<'r, Client, T, D>
-    where Client: Connection
-{
+pub struct RelateBuilder<T, D> {
     pub statement: RelateStatement,
-    pub(crate) db: &'r Surreal<Client>,
     pub(crate) relate_state: PhantomData<T>,
     pub(crate) data_state: PhantomData<D>,
 }
 
-impl<'r, Client> RelateBuilder<'r, Client, NoRelation, NoData>
-    where Client: Connection
-{
-    pub fn new(db: &'r Surreal<Client>) -> Self {
+impl RelateBuilder<NoRelation, NoData> {
+    pub fn new() -> Self {
         Self {
             statement: Default::default(),
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
@@ -37,21 +31,17 @@ impl<'r, Client> RelateBuilder<'r, Client, NoRelation, NoData>
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::relate::RelateBuilder;
+    /// use surrealdb::sql::Thing;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     use surrealdb::sql::Thing;
-    ///     let db = connect("mem://").await.unwrap();
-    ///
-    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
+    /// fn main() {
+    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
     ///     // The above builder becomes `RELATE test:test->test->test2:test2
     ///
     /// }
-    pub fn relation(self, from: impl Into<ExtraValue>, kind: impl Into<ExtraTable>, with: impl Into<ExtraValue>) -> RelateBuilder<'r, Client, FilledRelation, NoData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn relation(self, from: impl Into<ExtraValue>, kind: impl Into<ExtraTable>, with: impl Into<ExtraValue>) -> RelateBuilder<FilledRelation, NoData> {
+        let Self { mut statement, .. } = self;
 
         statement.from = from.into().0;
         statement.kind = kind.into().0;
@@ -59,38 +49,30 @@ impl<'r, Client> RelateBuilder<'r, Client, NoRelation, NoData>
 
         RelateBuilder {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
     }
 }
 
-impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
-    where Client: Connection
-{
+impl RelateBuilder<FilledRelation, NoData> {
     /// This function is for `SET`
     ///
     /// Example:
     /// ```rust
-    /// use surrealdb::engine::any::connect;
     /// use surrealdb::sql::Operator;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::relate::RelateBuilder;
+    /// use surrealdb::sql::Thing;
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     use surrealdb::sql::Thing;
-    ///     let db = connect("mem://").await.unwrap();
-    ///
-    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test")]);
+    /// fn main() {
+    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test")]);
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test'
     ///
-    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test', test2 = 'test2'
-    ///
     /// }
-    pub fn set(self, set: impl Into<SetExpression>) -> RelateBuilder<'r, Client, FilledRelation, FilledData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn set(self, set: impl Into<SetExpression>) -> RelateBuilder<FilledRelation, FilledData> {
+        let Self { mut statement, .. } = self;
 
         let set = set.into().0;
 
@@ -98,7 +80,6 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
 
         RelateBuilder {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
@@ -110,7 +91,7 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
     /// ```rust
     /// use serde::Serialize;
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb_extra::query::statement::StatementBuilder;
+    /// use surrealdb_extra::query::relate::RelateBuilder;
     /// use surrealdb::sql::Thing;
     ///
     /// #[derive(Serialize)]
@@ -122,12 +103,12 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
     /// async fn main() {
     ///
     ///     let db = connect("mem://").await.unwrap();
-    ///     db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).content(Test { test: "test".to_string(), magic: true });
+    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).content(Test { test: "test".to_string(), magic: true });
     ///     // The above builder becomes `RELATE test:test->test->test2:test2 CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize + 'static) -> RelateBuilder<'r, Client, FilledRelation, FilledData> {
-        let Self { mut statement, db, .. } = self;
+    pub fn content(self, content: impl Serialize + 'static) -> RelateBuilder<FilledRelation, FilledData> {
+        let Self { mut statement, .. } = self;
 
         let val = to_value(content).unwrap_or_default();
 
@@ -135,24 +116,20 @@ impl<'r, Client> RelateBuilder<'r, Client, FilledRelation, NoData>
 
         RelateBuilder {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
     }
 }
 
-impl<'r, Client, D> RelateBuilder<'r, Client, FilledRelation, D>
-    where Client: Connection
-{
+impl<D> RelateBuilder<FilledRelation, D> {
     pub fn only(self) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         statement.only = true;
 
         Self {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
@@ -160,7 +137,7 @@ impl<'r, Client, D> RelateBuilder<'r, Client, FilledRelation, D>
 
     /// This function is for `RETURN`
     pub fn output(self, output: impl Into<ExtraOutput>) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         let output = output.into().0;
 
@@ -168,7 +145,6 @@ impl<'r, Client, D> RelateBuilder<'r, Client, FilledRelation, D>
 
         Self {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
@@ -176,7 +152,7 @@ impl<'r, Client, D> RelateBuilder<'r, Client, FilledRelation, D>
 
     /// You can also use the Timeout type inside surrealdb or Duration inside standard for more complex requests
     pub fn timeout(self, timeout: impl Into<ExtraTimeout>) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         let timeout = timeout.into().0;
 
@@ -184,88 +160,67 @@ impl<'r, Client, D> RelateBuilder<'r, Client, FilledRelation, D>
 
         Self {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
     }
 
     pub fn parallel(self) -> Self {
-        let Self { mut statement, db, .. } = self;
+        let Self { mut statement, .. } = self;
 
         statement.parallel = true;
 
         Self {
             statement,
-            db,
             relate_state: Default::default(),
             data_state: Default::default(),
         }
     }
 
-    pub fn to_query(self) -> Query<'r, Client> {
-        self.db.query(self.statement)
+    /// Converts the builder to query type
+    pub fn to_query(self, db: &Surreal<impl Connection>) -> Query<impl Connection> {
+        db.query(self.statement)
     }
-
 }
 
 #[cfg(test)]
 mod test {
-    use surrealdb::engine::any::{Any, connect};
     use surrealdb::opt::IntoQuery;
     use surrealdb::sql::Thing;
     use surrealdb::sql::Operator;
-    use surrealdb::Surreal;
-    use crate::query::statement::StatementBuilder;
 
     use super::*;
 
-    async fn db() -> Surreal<Any> {
-        let db = connect("mem://").await.unwrap();
-
-        db.use_ns("test").use_db("test").await.unwrap();
-
-        db
-    }
-
-    #[tokio::test]
-    async fn relate_table() {
-        let db = db().await;
-
-        let relate = RelateBuilder::new(&db).relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
+    #[test]
+    fn relate_table() {
+        let relate = RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
 
         let query = relate.statement.into_query();
 
         assert!(query.is_ok());
     }
 
-    #[tokio::test]
-    async fn relate_table_data() {
-        let db = db().await;
-
-        let relate = RelateBuilder::new(&db).relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    #[test]
+    fn relate_table_data() {
+        let relate = RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
 
         let query = relate.statement.into_query();
 
         assert!(query.is_ok());
     }
 
-    #[tokio::test]
-    async fn relate_table_db() {
-        let db = db().await;
-
-        let relate = db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
+    #[test]
+    fn relate_table_db() {
+        let relate = RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
 
         let query = relate.statement.into_query();
 
         assert!(query.is_ok());
     }
 
-    #[tokio::test]
-    async fn relate_table_data_db() {
-        let db = db().await;
-
-        let relate = db.relate_builder().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    #[test]
+    fn relate_table_data_db() {
+        let relate = RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
 
         let query = relate.statement.into_query();
 

@@ -8,3 +8,9 @@ impl From<Thing> for ExtraValue {
         ExtraValue(Value::Thing(value))
     }
 }
+
+impl From<Value> for ExtraValue {
+    fn from(value: Value) -> Self {
+        ExtraValue(value)
+    }
+}

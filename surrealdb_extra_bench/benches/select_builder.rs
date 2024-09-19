@@ -13,8 +13,8 @@ use surrealdb::Surreal;
 use surrealdb_extra::query::parsing::cond::Condition;
 use tokio::runtime::Runtime;
 use surrealdb_extra::{cond_vec, op};
-use surrealdb_extra::query::statement::StatementBuilder;
 use surrealdb_extra::query::parsing::order::OrderDirection;
+use surrealdb_extra::query::select::SelectBuilder;
 use surrealdb_extra::table::Table;
 
 async fn db() -> Surreal<Any> {
@@ -45,7 +45,7 @@ fn select_builder_from_expr_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition(
                         Value::Expression(
                             Box::new(
                                 Expression::Binary {
@@ -79,7 +79,7 @@ fn select_builder_from_expr_benchmark(c: &mut Criterion) {
                                 }
                             )
                         )
-                    ).to_query()
+                    ).to_query(&db)
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -99,7 +99,7 @@ fn select_builder_from_string_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition("n > $n AND n > $n AND n > $n AND n > $n AND n > $n").to_query()
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition("n > $n AND n > $n AND n > $n AND n > $n AND n > $n").to_query(&db)
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -119,7 +119,7 @@ fn select_builder_with_cond_5_exact_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
                             ("n", Operator::MoreThan, "$n"),
                                 Operator::And,
                             ("n", Operator::MoreThan, "$n"),
@@ -129,7 +129,7 @@ fn select_builder_with_cond_5_exact_benchmark(c: &mut Criterion) {
                             ("n", Operator::MoreThan, "$n"),
                                 Operator::And,
                             ("n", Operator::MoreThan, "$n"),
-                        ]).to_query()
+                        ]).to_query(&db)
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -170,7 +170,7 @@ fn select_builder_from_string_with_subquery_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition("name = $name AND n > $n AND n > $n AND n > $n AND n > $n AND n > $n AND (test = $n AND n > $n AND n > $n)").to_query()
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition("name = $name AND n > $n AND n > $n AND n > $n AND n > $n AND n > $n AND (test = $n AND n > $n AND n > $n)").to_query(&db)
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -190,7 +190,7 @@ fn select_builder_with_cond_and_subquery_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
                             ("name", Operator::Equal, "$name"),
                                 Operator::And,
                             ("n", Operator::MoreThan, "$n"),
@@ -204,7 +204,7 @@ fn select_builder_with_cond_and_subquery_benchmark(c: &mut Criterion) {
                             ("n", Operator::MoreThan, "$n"),
                                 Operator::And,
                             cond_vec![("test", Operator::Equal, "$n"), Operator::And, ("n", Operator::MoreThan, "$n"), Operator::And, ("n", Operator::MoreThan, "$n")]
-                        ]).to_query()
+                        ]).to_query(&db)
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -245,7 +245,7 @@ fn select_builder_with_cond_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).condition(cond_vec![
                             ("name", Operator::Equal, "$name"),
                                 Operator::And,
                             ("n", Operator::MoreThan, "$n"),
@@ -257,7 +257,7 @@ fn select_builder_with_cond_benchmark(c: &mut Criterion) {
                             ("n", Operator::MoreThan, "$n"),
                                 Operator::And,
                             ("n", Operator::MoreThan, "$n"),
-                        ]).to_query()
+                        ]).to_query(&db)
                         .bind(("name", "test"))
                         .bind(("n", 3));
                 }
@@ -298,7 +298,7 @@ fn select_builder_without_cond_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).to_query();
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).to_query(&db);
                 }
                 start.elapsed()
             })
@@ -335,7 +335,7 @@ fn select_builder_with_more_options_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = db.select_builder().what(Test::TABLE_NAME).field(Field::All).limit(5).start(2).order(("test", OrderDirection::DESC)).order(("test", OrderDirection::ASC)).to_query();
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).limit(5).start(2).order(("test", OrderDirection::DESC)).order(("test", OrderDirection::ASC)).to_query(&db);
                 }
                 start.elapsed()
             })
