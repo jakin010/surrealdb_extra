@@ -40,7 +40,7 @@ impl<'r, Client> CreateBuilder<'r, Client, NoWhat, NoData>
     /// Example:
     /// ```rust
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::create::CreateBuilder;
     ///
     /// #[tokio::main]
@@ -48,7 +48,7 @@ impl<'r, Client> CreateBuilder<'r, Client, NoWhat, NoData>
     ///     let db = connect("mem://").await.unwrap();
     ///     CreateBuilder::new(&db).what("test");
     ///
-    ///     CreateBuilder::new(&db).what(RecordId::from(("test", "test")));
+    ///     CreateBuilder::new(&db).what(Thing::from(("test", "test")));
     /// }
     /// ```
     ///
@@ -174,7 +174,7 @@ impl<'r, Client> CreateBuilder<'r, Client, FilledWhat, NoData>
     ///     // The above builder becomes `CREATE test CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
+    pub fn content(self, content: impl Serialize + 'static) -> CreateBuilder<'r, Client, FilledWhat, FilledData> {
         let Self { mut statement, db, .. } = self;
 
         let val = to_value(content).unwrap_or_default();

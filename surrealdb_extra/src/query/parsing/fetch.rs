@@ -15,7 +15,7 @@ impl From<&str> for ExtraFetch {
         let idiom = ExtraIdiom::from(value).0;
 
         let mut fetch = Fetch::default();
-        fetch.1 = Value::Idiom(idiom);
+        fetch.0 = Value::Idiom(idiom);
 
         Self(fetch)
     }
@@ -26,7 +26,7 @@ impl From<String> for ExtraFetch {
         let idiom = ExtraIdiom::from(value).0;
 
         let mut fetch = Fetch::default();
-        fetch.1 = Value::Idiom(idiom);
+        fetch.0 = Value::Idiom(idiom);
 
         Self(fetch)
     }
@@ -35,7 +35,7 @@ impl From<String> for ExtraFetch {
 impl From<Idiom> for ExtraFetch {
     fn from(value: Idiom) -> Self {
         let mut fetch = Fetch::default();
-        fetch.1 = Value::Idiom(value);
+        fetch.0 = Value::Idiom(value);
 
         Self(fetch)
     }
@@ -43,9 +43,6 @@ impl From<Idiom> for ExtraFetch {
 
 impl From<Value> for ExtraFetch {
     fn from(value: Value) -> Self {
-        let mut fetch = Fetch::default();
-        fetch.1 = value;
-
-        Self(fetch)
+        Self(value.into())
     }
 }

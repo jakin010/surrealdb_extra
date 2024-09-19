@@ -3,7 +3,7 @@
 //! To use this trait, implement it for your struct representing the table. The struct must have the following attributes:
 //! - `#[derive(Table)]` to automatically derive the implementation of the `Table` trait.
 //! - `#[table(name = "...")]` to specify the name of the table in the database.
-//! - `id: Option<RecordId>` needs to be one of the fields
+//! - `id: Option<Thing>` needs to be one of the fields
 //!
 //! # Example
 //!
@@ -11,7 +11,7 @@
 //! ``` rust
 //!  use serde::{Serialize, Deserialize};
 //!  use surrealdb_extra::table::Table;
-//!  use surrealdb::opt::RecordId;
+//!  use surrealdb::sql::Thing;
 //!  use surrealdb::engine::any::connect;
 //!  use surrealdb::{Surreal, Result};
 //!  use tokio::main;
@@ -22,7 +22,7 @@
 //! #[table(name = "my_table")]
 //! struct MyStruct {
 //!  // id is the only field that is a must id must be of type Option<::surrealdb::sql::Thing>
-//!     id: Option<RecordId>,
+//!     id: Option<Thing>,
 //!     // other fields...
 //!     pub name: String
 //! }
@@ -38,7 +38,7 @@
 //!
 //!     let created_struct = my_struct.create(&db).await.unwrap();
 //!
-//!     let mut updated_struct = created_struct.first().unwrap().clone();
+//!     let mut updated_struct = created_struct.unwrap().clone();
 //!     updated_struct.name = "test".to_string();
 //!
 //!     let updated_struct: Option<MyStruct> = updated_struct.update(&db).await.unwrap();
@@ -66,7 +66,7 @@ use ::surrealdb::{Connection, Surreal};
 pub use crate::table::err::TableError;
 
 #[cfg(feature = "query")]
-use surrealdb::opt::RecordId;
+use surrealdb::sql::Thing;
 
 #[cfg(feature = "query")]
 use crate::query::{
@@ -78,20 +78,20 @@ use crate::query::{
 };
 
 #[async_trait]
-pub trait Table: Serialize + DeserializeOwned + Send + Sync
+pub trait Table: Serialize + DeserializeOwned + Send + Sync + 'static
 {
     const TABLE_NAME: &'static str;
 
-    fn get_id(&self) -> &Option<::surrealdb::opt::RecordId>;
+    fn get_id(&self) -> &Option<::surrealdb::sql::Thing>;
 
     fn set_id(&mut self, id: impl Into<::surrealdb::sql::Id>);
 
-    fn create_record_id(id: impl Into<::surrealdb::sql::Id>) -> ::surrealdb::opt::RecordId {
-        ::surrealdb::opt::RecordId::from((Self::TABLE_NAME, id.into()))
+    fn create_record_id(id: impl Into<::surrealdb::sql::Id>) -> ::surrealdb::sql::Thing {
+        ::surrealdb::sql::Thing::from((Self::TABLE_NAME, id.into()))
     }
 
-    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Vec<Self>> {
-        let s: Vec<Self> = db.create(Self::TABLE_NAME).content(self).await?;
+    async fn create<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>> {
+        let s: Option<Self> = db.create(Self::TABLE_NAME).content(self).await?;
 
         Ok(s)
     }
@@ -121,14 +121,14 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync
     /// ```rust
     /// use serde::{Deserialize, Serialize};
     /// use serde_with::skip_serializing_none;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::table::Table;
     ///
     /// #[skip_serializing_none]
     /// #[derive(Debug, Table, Serialize, Deserialize)]
     /// #[table(name = "test")]
     /// struct Test {
-    ///     id: Option<RecordId>,
+    ///     id: Option<Thing>,
     /// }
     /// ```
     async fn update<C: Connection>(self, db: &Surreal<C>) -> Result<Option<Self>> {
@@ -148,7 +148,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync
     #[cfg(feature = "query")]
     fn select_builder<C: Connection>(db: &Surreal<C>, id: Option<String>) -> SelectBuilder<C, FilledWhat, NoFields, NoCond> {
         if let Some(id) = id {
-            return db.select_builder().what(RecordId::from((Self::TABLE_NAME, id.as_str())))
+            return db.select_builder().what(Thing::from((Self::TABLE_NAME, id.as_str())))
         }
 
         db.select_builder().what(Self::TABLE_NAME)

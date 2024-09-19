@@ -7,7 +7,7 @@ use criterion::{
 use serde::{Deserialize, Serialize};
 
 use surrealdb::engine::any::{Any, connect};
-use surrealdb::opt::RecordId;
+use surrealdb::sql::Thing;
 use surrealdb::sql::{Field, Operator, Value, Expression};
 use surrealdb::Surreal;
 use surrealdb_extra::query::parsing::cond::Condition;
@@ -28,7 +28,7 @@ async fn db() -> Surreal<Any> {
 #[derive(Debug, Table, Serialize, Deserialize, PartialEq, Clone)]
 #[table(name = "test")]
 pub struct Test {
-    id: Option<RecordId>,
+    id: Option<Thing>,
     name: String,
     n: i64
 }
@@ -107,7 +107,6 @@ fn select_builder_from_string_benchmark(c: &mut Criterion) {
             })
     );
 }
-
 fn select_builder_with_cond_5_exact_benchmark(c: &mut Criterion) {
 
     let r = Runtime::new().unwrap();
@@ -363,6 +362,8 @@ fn query_with_more_options_benchmark(c: &mut Criterion) {
 
 criterion_group!(benches_select_from_expr, select_builder_from_expr_benchmark);
 criterion_group!(benches_select_from_string, select_builder_from_string_benchmark);
+criterion_group!(benches_select_5, select_builder_with_cond_5_exact_benchmark);
+criterion_group!(benches_query_5, query_with_cond_5_exact_benchmark);
 
 criterion_group!(benches_select_with_cond, select_builder_with_cond_benchmark);
 criterion_group!(benches_query_with_cond, query_with_cond_benchmark);
@@ -371,8 +372,6 @@ criterion_group!(benches_select_subquery, select_builder_with_cond_and_subquery_
 criterion_group!(benches_select_from_string_subquery, select_builder_from_string_with_subquery_benchmark);
 criterion_group!(benches_query_subquery, query_with_cond_and_subquery_benchmark);
 
-criterion_group!(benches_select_5, select_builder_with_cond_5_exact_benchmark);
-criterion_group!(benches_query_5, query_with_cond_5_exact_benchmark);
 
 criterion_group!(benches_select_without_cond, select_builder_without_cond_benchmark);
 criterion_group!(benches_query_without_cond, query_without_cond_benchmark);
@@ -381,11 +380,10 @@ criterion_group!(benches_select_more_options, select_builder_with_more_options_b
 criterion_group!(benches_query_more_options, query_with_more_options_benchmark);
 
 criterion_main!(
-    benches_select_from_expr,
-    benches_select_from_string,
+    benches_select_from_expr, benches_select_from_string,
+    benches_select_5, benches_query_5,
     benches_select_with_cond, benches_query_with_cond,
     benches_select_subquery, benches_select_from_string_subquery, benches_query_subquery,
-    benches_select_5, benches_query_5,
     benches_select_without_cond, benches_query_without_cond,
     benches_select_more_options, benches_query_more_options,
 );

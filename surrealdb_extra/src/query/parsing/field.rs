@@ -114,3 +114,19 @@ impl From<(String, &str)> for ExtraField {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn from_str() {
+        let ef = ExtraField::from("test");
+
+        let field = Field::Single {
+            expr: Value::Idiom("test".into()),
+            alias: None,
+        };
+
+        assert_eq!(ef.0, field)
+    }
+}

@@ -43,7 +43,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     /// Example:
     /// ```rust
     /// use surrealdb::engine::any::connect;
-    /// use surrealdb::opt::RecordId;
+    /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
     /// #[tokio::main]
@@ -51,7 +51,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, NoWhat, NoData, NoCond>
     ///     let db = connect("mem://").await.unwrap();
     ///     UpdateBuilder::new(&db).what("test");
     ///
-    ///     UpdateBuilder::new(&db).what(RecordId::from(("test", "test")));
+    ///     UpdateBuilder::new(&db).what(Thing::from(("test", "test")));
     /// }
     /// ```
     ///
@@ -182,7 +182,7 @@ impl<'r, Client> UpdateBuilder<'r, Client, FilledWhat, NoData, NoCond>
     ///     // The above builder becomes `UPDATE test CONTENT { test: "test", magic: true }
     ///
     /// }
-    pub fn content(self, content: impl Serialize) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
+    pub fn content(self, content: impl Serialize + 'static) -> UpdateBuilder<'r, Client, FilledWhat, FilledData, NoCond> {
         let Self { mut statement, db, .. } = self;
 
         let val = to_value(content).unwrap_or_default();

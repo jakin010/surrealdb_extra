@@ -16,12 +16,12 @@ pub fn table(input: TokenStream) -> TokenStream {
         impl Table for #struct_name {
             const TABLE_NAME: &'static str = #table_name;
 
-            fn get_id(&self) -> &Option<::surrealdb::opt::RecordId> {
+            fn get_id(&self) -> &Option<::surrealdb::sql::Thing> {
                 &self.id
             }
 
             fn set_id(&mut self, id: impl Into<::surrealdb::sql::Id>) {
-                self.id = Some(::surrealdb::opt::RecordId::from((Self::TABLE_NAME, id.into())));
+                self.id = Some(::surrealdb::sql::Thing::from((Self::TABLE_NAME, id.into())));
             }
         }
     };

@@ -1,5 +1,3 @@
-use surrealdb::sql::{value, Value};
-
 pub mod what;
 pub mod idiom;
 pub mod field;
@@ -22,13 +20,14 @@ pub mod value;
 pub mod table;
 pub mod operator;
 
+use surrealdb::sql::{value, Value};
+
 pub fn str_to_value(val: impl Into<String>) -> Value {
     value(&val.into()).unwrap_or_else(|_| Value::Null)
 }
 
 #[cfg(test)]
 mod test {
-
     use super::*;
 
     #[test]

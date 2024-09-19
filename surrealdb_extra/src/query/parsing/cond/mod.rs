@@ -1,5 +1,3 @@
-
-
 mod condition;
 
 use std::collections::VecDeque;
@@ -67,7 +65,7 @@ impl From<Vec<Condition>> for ExtraCond {
 impl From<VecDeque<Condition>> for ExtraCond {
     fn from(mut value: VecDeque<Condition>) -> Self {
         let mut cond = Cond::default();
-        
+
         if value.is_empty() {
             cond.0 = Value::Null;
             return Self(cond)
@@ -117,7 +115,7 @@ impl From<Condition> for ExtraCond {
 #[cfg(test)]
 mod test {
     use serde::{Deserialize, Serialize};
-    use surrealdb::opt::RecordId;
+    use surrealdb::sql::Thing;
     use surrealdb::{engine::any::connect, sql::Part};
     use surrealdb::sql::{Field, Operator};
     use crate::{cond_vec, op};
@@ -130,7 +128,7 @@ mod test {
     #[derive(Debug, Table, Serialize, Deserialize, PartialEq, Clone)]
     #[table(name = "test")]
     pub struct Test {
-        id: Option<RecordId>,
+        id: Option<Thing>,
         name: String,
         n: i64
     }

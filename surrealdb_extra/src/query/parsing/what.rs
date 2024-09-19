@@ -1,4 +1,4 @@
-use surrealdb::{opt::RecordId, sql::{Table, Value, Values}};
+use surrealdb::{sql::Thing, sql::{Table, Value, Values}};
 
 #[derive(Debug, Clone)]
 pub struct ExtraValue(pub Values);
@@ -33,12 +33,12 @@ impl From<String> for ExtraValue {
     }
 }
 
-impl From<RecordId> for ExtraValue {
-    fn from(value: RecordId) -> Self {
-        let mut values = Values::default();        
+impl From<Thing> for ExtraValue {
+    fn from(value: Thing) -> Self {
+        let mut values = Values::default();
 
         values.0 = vec![Value::Thing(value)];
-        
+
         ExtraValue(values)
     }
 }

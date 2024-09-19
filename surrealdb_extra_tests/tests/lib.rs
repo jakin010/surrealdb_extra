@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::opt::RecordId;
+use surrealdb::sql::Thing;
 use surrealdb::{Error, Surreal};
 use surrealdb::engine::any::{Any, connect};
 use surrealdb_extra::query::statement::StatementBuilder;
@@ -9,7 +9,7 @@ use surrealdb_extra::table::Table;
 #[derive(Debug, Default, Table, Serialize, Deserialize, Clone, PartialEq)]
 #[table(name = "test_test")]
 pub struct Test {
-    id: Option<RecordId>,
+    id: Option<Thing>,
     name: String,
     n: Option<usize>,
 }
@@ -30,11 +30,11 @@ fn table_derive_init() {
 #[test]
 fn table_derive_get_id() {
     let t = Test {
-        id: Some(RecordId::from(("test", "test"))),
+        id: Some(Thing::from(("test", "test"))),
         name: "".to_string(),
         ..Test::default()
     };
-    assert_eq!(t.get_id().clone().unwrap(), RecordId::from(("test", "test")))
+    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test", "test")))
 }
 
 #[test]
@@ -46,7 +46,7 @@ fn table_derive_set_id() {
 
     t.set_id("test");
 
-    assert_eq!(t.get_id().clone().unwrap(), RecordId::from(("test_test", "test")))
+    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test_test", "test")))
 }
 
 #[tokio::test]
@@ -61,7 +61,7 @@ async fn table_create() {
 
     let tc = t.clone().create(&db).await.unwrap();
 
-    assert_eq!(t.name, tc.first().unwrap().name);
+    assert_eq!(t.name, tc.unwrap().name);
 }
 
 #[tokio::test]
@@ -76,7 +76,7 @@ async fn table_db_get_by_id() {
 
     let tc = t.create(&db).await.unwrap();
 
-    let tc = tc.first().unwrap();
+    let tc = tc.unwrap();
     let tc_id = tc.clone().id.unwrap();
 
     let op_t = Test::get_by_id(&db, tc_id.id.to_raw()).await.unwrap();
@@ -97,7 +97,7 @@ async fn table_delete() {
 
     let tc = t.create(&db).await.unwrap();
 
-    let tc_id = tc.first().unwrap().clone().id;
+    let tc_id = tc.unwrap().clone().id;
 
     assert!(tc_id.is_some());
 
@@ -139,7 +139,7 @@ async fn table_update() {
 
     let tc = t.create(&db).await.unwrap();
 
-    let mut tc = tc.first().unwrap().clone();
+    let mut tc = tc.unwrap().clone();
 
     tc.name = "test".to_string();
 
@@ -160,7 +160,7 @@ async fn select_field() {
     };
 
     let tc = t.create(&db).await.unwrap();
-    let tc = tc.first().unwrap().clone();
+    let tc = tc.unwrap().clone();
 
     let mut q = db.select_builder().what(Test::TABLE_NAME).field("name").to_query().await.unwrap();
 
@@ -205,7 +205,7 @@ async fn select_id_name_selected_success() {
     };
 
     let tc = t.create(&db).await.unwrap();
-    let tc = tc.first().unwrap().clone();
+    let tc = tc.unwrap().clone();
 
     let mut q = db.select_builder().what(Test::TABLE_NAME).field("id").field("name").to_query().await.unwrap();
 
