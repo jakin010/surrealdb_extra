@@ -7,7 +7,6 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!
 //! let db = connect("mem://").await.unwrap();
 //!     db.use_ns("ns").use_db("db").await.unwrap();
 //!
@@ -57,7 +56,7 @@ use crate::query::parsing::what::ExtraValue;
 use crate::query::parsing::with::ExtraWith;
 use crate::query::states::{FilledCond, FilledFields, FilledWhat, NoCond, NoFields, NoWhat};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SelectBuilder<W, F, C> {
     pub statement: SelectStatement,
     pub(crate) what_state: PhantomData<W>,
@@ -83,11 +82,10 @@ impl SelectBuilder<NoWhat, NoFields, NoCond> {
     /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// fn main() {
-    ///     SelectBuilder::new().what("test").field("test"); // This becomes `SELECT test FROM test`
+    ///  SelectBuilder::new().what("test").field("test"); // This becomes `SELECT test FROM test`
     ///
-    ///     SelectBuilder::new().what(Thing::from(("test", "test"))).field("test"); // This becomes `SELECT test FROM test:test`
-    /// }
+    ///  SelectBuilder::new().what(Thing::from(("test", "test"))).field("test"); // This becomes `SELECT test FROM test:test`
+    ///
     /// ```
     ///
     /// You can also use the Value type inside surrealdb for more complex requests
@@ -113,21 +111,20 @@ impl<F, C> SelectBuilder<FilledWhat, F, C> {
     /// use surrealdb::sql::Field;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// fn main() {
-    ///     SelectBuilder::new().what("test").field(Field::All); // This becomes `SELECT * FROM test`
+    /// SelectBuilder::new().what("test").field(Field::All); // This becomes `SELECT * FROM test`
     ///
-    ///     SelectBuilder::new().what("test").field(Field::All).field(("test", "test.test")); // This becomes `SELECT *, test as test.test FROM test`
+    /// SelectBuilder::new().what("test").field(Field::All).field(("test", "test.test")); // This becomes `SELECT *, test as test.test FROM test`
     ///
-    ///     SelectBuilder::new().what("test").field("test"); // This becomes `SELECT test FROM test`
+    /// SelectBuilder::new().what("test").field("test"); // This becomes `SELECT test FROM test`
     ///
-    ///     SelectBuilder::new().what("test").field("$test"); // This becomes `SELECT $test FROM test`
+    /// SelectBuilder::new().what("test").field("$test"); // This becomes `SELECT $test FROM test`
     ///
-    ///     SelectBuilder::new().what("test").field(("test", "test")); // This becomes `SELECT test as test FROM test`
+    /// SelectBuilder::new().what("test").field(("test", "test")); // This becomes `SELECT test as test FROM test`
     ///
-    ///     SelectBuilder::new().what("test").field(("test.test", "test")); // This becomes `SELECT test.test as test FROM test`
+    /// SelectBuilder::new().what("test").field(("test.test", "test")); // This becomes `SELECT test.test as test FROM test`
     ///
-    ///     SelectBuilder::new().what("test").field(("test", "test.test")); // This becomes `SELECT test as test.test FROM test`
-    /// }
+    /// SelectBuilder::new().what("test").field(("test", "test.test")); // This becomes `SELECT test as test.test FROM test`
+    ///
     /// ```
     ///
     /// You can also use the Field type inside surrealdb for more complex requests
@@ -156,42 +153,40 @@ impl SelectBuilder<FilledWhat, FilledFields, NoCond> {
     /// use surrealdb_extra::query::parsing::cond::Condition;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// fn main() {
-    ///     SelectBuilder::new().what("test").field("test").condition("test");
-    ///     // The above builder becomes `SELECT test FROM test WHERE test`
+    /// SelectBuilder::new().what("test").field("test").condition("test");
+    /// // The above builder becomes `SELECT test FROM test WHERE test`
     ///
-    ///     SelectBuilder::new().what("test").field("test").condition(cond_vec![(op!(!), "test")]);
-    ///     // The above builder becomes `SELECT test FROM test WHERE !test`
+    /// SelectBuilder::new().what("test").field("test").condition(cond_vec![(op!(!), "test")]);
+    /// // The above builder becomes `SELECT test FROM test WHERE !test`
     ///
-    ///     SelectBuilder::new().what("test").field("test").condition(cond_vec![("test", op!(>), "$test")]);
-    ///     // The above builder becomes `SELECT test FROM test WHERE test > $test`
+    /// SelectBuilder::new().what("test").field("test").condition(cond_vec![("test", op!(>), "$test")]);
+    /// // The above builder becomes `SELECT test FROM test WHERE test > $test`
     ///
-    ///     SelectBuilder::new().what("test").field("test").condition(cond_vec![("test", Operator::Equal, "$test")]);
-    ///     // The above builder becomes `SELECT test FROM test WHERE test = $test`
+    /// SelectBuilder::new().what("test").field("test").condition(cond_vec![("test", Operator::Equal, "$test")]);
+    /// // The above builder becomes `SELECT test FROM test WHERE test = $test`
     ///
-    ///     // For multiple conditions the vector `cond_vec![]` is recommended for usage
-    ///     SelectBuilder::new().what("test").field("test")
-    ///     .condition(cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test")]);
-    ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
+    /// // For multiple conditions the vector `cond_vec![]` is recommended for usage
+    /// SelectBuilder::new().what("test").field("test")
+    /// .condition(cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test")]);
+    /// // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
     ///
-    ///     // Other method of using the multi conditions
-    ///     SelectBuilder::new().what("test").field("test").condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
-    ///     // The above builder becomes `SELECT test FROM test WHERE test AND name <= $name`
+    /// // Other method of using the multi conditions
+    /// SelectBuilder::new().what("test").field("test").condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
+    /// // The above builder becomes `SELECT test FROM test WHERE test AND name <= $name`
     ///
-    ///     // For sub queries
-    ///     SelectBuilder::new().what("test").field("test")
-    ///     .condition(cond_vec![
-    ///         ("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test"), Operator::And,
-    ///         cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2")]
-    ///     ]);
-    ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test AND (test1 = $test1 AND test2 = $test2)`
+    /// // For sub queries
+    /// SelectBuilder::new().what("test").field("test")
+    /// .condition(cond_vec![
+    ///     ("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test"), Operator::And,
+    ///     cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2")]
+    /// ]);
+    /// // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test AND (test1 = $test1 AND test2 = $test2)`
     ///
-    ///     // It is also possible to type the condition like normal
-    ///     SelectBuilder::new().what("test").field("test")
-    ///     .condition("test1 = $test1 AND test2 = $test2 or test or !test");
-    ///     // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
+    /// // It is also possible to type the condition like normal
+    /// SelectBuilder::new().what("test").field("test")
+    /// .condition("test1 = $test1 AND test2 = $test2 or test or !test");
+    /// // The above builder becomes `SELECT test FROM test WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
     ///
-    /// }
     /// ```
     ///
     /// ## The fastest way to query is to use the string format for conditions at least from benchmarks
@@ -297,13 +292,12 @@ impl<C> SelectBuilder<FilledWhat, FilledFields, C> {
     /// use surrealdb_extra::query::parsing::order::OrderDirection;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// fn main() {
-    ///     SelectBuilder::new().what("test").field("test").order(("test", OrderDirection::ASC)); // This becomes `SELECT test FROM test ORDER BY test ASC`
+    /// SelectBuilder::new().what("test").field("test").order(("test", OrderDirection::ASC)); // This becomes `SELECT test FROM test ORDER BY test ASC`
     ///
-    ///     SelectBuilder::new().what("test").field(("test", "test")).order(("test".to_string(), OrderDirection::DESC)); // This becomes `SELECT test as test FROM test ORDER BY test DESC`
+    /// SelectBuilder::new().what("test").field(("test", "test")).order(("test".to_string(), OrderDirection::DESC)); // This becomes `SELECT test as test FROM test ORDER BY test DESC`
     ///
-    ///     SelectBuilder::new().what("test").field(("test.test", "test")).order(("test1".to_string(), OrderDirection::DESC)).order((("test2", OrderDirection::ASC))); // This becomes `SELECT test.test as test FROM test ORDER BY test1 DESC, test2 ASC`
-    /// }
+    /// SelectBuilder::new().what("test").field(("test.test", "test")).order(("test1".to_string(), OrderDirection::DESC)).order((("test2", OrderDirection::ASC))); // This becomes `SELECT test.test as test FROM test ORDER BY test1 DESC, test2 ASC`
+    ///
     /// ```
     /// You can also use the Order type inside surrealdb for more complex requests
     pub fn order(self, order: impl Into<ExtraOrder>) -> Self {
@@ -331,9 +325,7 @@ impl<C> SelectBuilder<FilledWhat, FilledFields, C> {
     /// ```rust
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// fn main() {
-    ///     SelectBuilder::new().what("test").field("test").limit(5); // This becomes `SELECT test FROM test LIMIT 5`
-    /// }
+    /// SelectBuilder::new().what("test").field("test").limit(5); // This becomes `SELECT test FROM test LIMIT 5`
     /// ```
     /// You can also use the Limit/Value type inside surrealdb for more complex requests
     pub fn limit(self, limit: impl Into<ExtraLimit>) -> Self {
@@ -358,9 +350,8 @@ impl<C> SelectBuilder<FilledWhat, FilledFields, C> {
     /// use surrealdb::engine::any::connect;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// fn main() {
-    ///     SelectBuilder::new().what("test").field("test").start(5); // This becomes `SELECT test FROM test START 5`
-    /// }
+    /// SelectBuilder::new().what("test").field("test").start(5); // This becomes `SELECT test FROM test START 5`
+    ///
     /// ```
     /// You can also use the Start/Value type inside surrealdb for more complex requests
     pub fn start(self, start: impl Into<ExtraStart>) -> Self {

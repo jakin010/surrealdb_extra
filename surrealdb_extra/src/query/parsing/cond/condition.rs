@@ -48,18 +48,10 @@ impl Condition {
     }
 
     pub fn is_value(&self) -> bool {
-        match self {
-            Condition::Value(..) => true,
-            Condition::ValOpVal(..) => true,
-            Condition::OperatorValue(..) => true,
-            _ => false,
-        }
+        matches!(self, Condition::Value(..) | Condition::ValOpVal(..) | Condition::OperatorValue(..))
     }
     pub fn is_operator(&self) -> bool {
-        match self {
-            Condition::Operator(_) => true,
-            _ => false
-        }
+        matches!(self, Condition::Operator(_))
     }
 }
 

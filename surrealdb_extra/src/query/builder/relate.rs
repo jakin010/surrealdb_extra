@@ -11,7 +11,7 @@ use crate::query::parsing::timeout::ExtraTimeout;
 use crate::query::parsing::value::ExtraValue;
 use crate::query::states::{FilledData, FilledRelation, NoData, NoRelation};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RelateBuilder<T, D> {
     pub statement: RelateStatement,
     pub(crate) relate_state: PhantomData<T>,
@@ -35,11 +35,9 @@ impl RelateBuilder<NoRelation, NoData> {
     /// use surrealdb_extra::query::relate::RelateBuilder;
     /// use surrealdb::sql::Thing;
     ///
-    /// fn main() {
-    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
-    ///     // The above builder becomes `RELATE test:test->test->test2:test2
+    ///  RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2")));
+    ///  // The above builder becomes `RELATE test:test->test->test2:test2
     ///
-    /// }
     pub fn relation(self, from: impl Into<ExtraValue>, kind: impl Into<ExtraTable>, with: impl Into<ExtraValue>) -> RelateBuilder<FilledRelation, NoData> {
         let Self { mut statement, .. } = self;
 
@@ -64,13 +62,12 @@ impl RelateBuilder<FilledRelation, NoData> {
     /// use surrealdb_extra::query::relate::RelateBuilder;
     /// use surrealdb::sql::Thing;
     ///
-    /// fn main() {
-    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test")]);
-    ///     // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test'
+    /// RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test")]);
+    /// // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test'
     ///
-    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
-    ///     // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test', test2 = 'test2'
-    /// }
+    /// RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    /// // The above builder becomes `RELATE test:test->test->test2:test2 SET test = 'test', test2 = 'test2'
+    ///
     pub fn set(self, set: impl Into<SetExpression>) -> RelateBuilder<FilledRelation, FilledData> {
         let Self { mut statement, .. } = self;
 
@@ -99,14 +96,10 @@ impl RelateBuilder<FilledRelation, NoData> {
     ///     test: String,
     ///     magic: bool
     /// }
-    /// #[tokio::main]
-    /// async fn main() {
     ///
-    ///     let db = connect("mem://").await.unwrap();
-    ///     RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).content(Test { test: "test".to_string(), magic: true });
-    ///     // The above builder becomes `RELATE test:test->test->test2:test2 CONTENT { test: "test", magic: true }
+    /// RelateBuilder::new().relation(Thing::from(("test", "test")), "test", Thing::from(("test2", "test2"))).content(Test { test: "test".to_string(), magic: true });
+    /// // The above builder becomes `RELATE test:test->test->test2:test2 CONTENT { test: "test", magic: true }
     ///
-    /// }
     pub fn content(self, content: impl Serialize + 'static) -> RelateBuilder<FilledRelation, FilledData> {
         let Self { mut statement, .. } = self;
 

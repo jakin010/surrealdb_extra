@@ -13,7 +13,7 @@ impl From<&str> for ExtraIdiom {
     fn from(value: &str) -> Self {
         let part: Vec<Part> = value
             .split('.')
-            .map(|x| Part::from(x))
+            .map(Part::from)
             .collect();
 
 
@@ -29,7 +29,7 @@ impl From<String> for ExtraIdiom {
     fn from(value: String) -> Self {
         let part: Vec<Part> = value
             .split('.')
-            .map(|x| Part::from(x))
+            .map(Part::from)
             .collect();
 
         let mut idiom = Idiom::default();

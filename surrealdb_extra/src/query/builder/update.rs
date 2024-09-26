@@ -14,7 +14,7 @@ use crate::query::parsing::what::ExtraValue;
 use crate::query::states::{FilledCond, FilledData, FilledWhat, NoCond, NoData, NoWhat};
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct UpdateBuilder<T, D, C> {
     pub statement: UpdateStatement,
     pub(crate) what_state: PhantomData<T>,
@@ -40,11 +40,9 @@ impl UpdateBuilder<NoWhat, NoData, NoCond> {
     /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// fn main() {
-    ///     UpdateBuilder::new().what("test");
+    ///  UpdateBuilder::new().what("test");
     ///
-    ///     UpdateBuilder::new().what(Thing::from(("test", "test")));
-    /// }
+    ///  UpdateBuilder::new().what(Thing::from(("test", "test")));
     /// ```
     ///
     /// You can also use the Value type inside surrealdb for more complex requests
@@ -87,14 +85,12 @@ impl UpdateBuilder<FilledWhat, NoData, NoCond> {
     /// use surrealdb::sql::Operator;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// fn main() {
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test'
+    ///  UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]);
+    ///  // The above builder becomes `UPDATE test SET test = 'test'
     ///
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test', test2 = 'test2'
+    ///  UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    ///  // The above builder becomes `UPDATE test SET test = 'test', test2 = 'test2'
     ///
-    /// }
     pub fn set(self, set: impl Into<SetExpression>) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
         let Self { mut statement, .. } = self;
 
@@ -117,14 +113,12 @@ impl UpdateBuilder<FilledWhat, NoData, NoCond> {
     /// ```rust
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// fn main() {
-    ///     UpdateBuilder::new().what("test").unset(vec!["test"]);
-    ///     // The above builder becomes `UPDATE test UNSET test
+    /// UpdateBuilder::new().what("test").unset(vec!["test"]);
+    /// // The above builder becomes `UPDATE test UNSET test
     ///
-    ///     UpdateBuilder::new().what("test").unset(vec!["test", "test"]);
-    ///     // The above builder becomes `UPDATE test UNSET test, test
+    /// UpdateBuilder::new().what("test").unset(vec!["test", "test"]);
+    /// // The above builder becomes `UPDATE test UNSET test, test
     ///
-    /// }
     pub fn unset(self, set: impl Into<UnsetExpression>) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
         let Self { mut statement, .. } = self;
 
@@ -154,11 +148,9 @@ impl UpdateBuilder<FilledWhat, NoData, NoCond> {
     ///     magic: bool
     /// }
     ///
-    /// fn main() {
-    ///     UpdateBuilder::new().what("test").content(Test { test: "test".to_string(), magic: true });
+    /// UpdateBuilder::new().what("test").content(Test { test: "test".to_string(), magic: true });
     ///     // The above builder becomes `UPDATE test CONTENT { test: "test", magic: true }
     ///
-    /// }
     pub fn content(self, content: impl Serialize + 'static) -> UpdateBuilder<FilledWhat, FilledData, NoCond> {
         let Self { mut statement, .. } = self;
 
@@ -186,34 +178,31 @@ impl UpdateBuilder<FilledWhat, FilledData, NoCond> {
     /// use surrealdb_extra::query::parsing::cond::Condition;
     /// use surrealdb_extra::query::update::UpdateBuilder;
     ///
-    /// fn main() {
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
-    ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test`
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition("test");
+    /// // The above builder becomes `UPDATE test SET test = 'test' WHERE test`
     ///
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![(Operator::Not, "test")]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE !test`
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![(Operator::Not, "test")]);
+    /// // The above builder becomes `UPDATE test SET test = 'test' WHERE !test`
     ///
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", op!(>), "$test")]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test > $test`
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", op!(>), "$test")]);
+    /// // The above builder becomes `UPDATE test SET test = 'test' WHERE test > $test`
     ///
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", Operator::Equal, "$test")]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test = $test`
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(cond_vec![("test", Operator::Equal, "$test")]);
+    /// // The above builder becomes `UPDATE test SET test = 'test' WHERE test = $test`
     ///
-    ///     // For multiple conditions the vector `cond_vec![]` is recommended for usage
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")])
-    ///     .condition(cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test")]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
+    /// // For multiple conditions the vector `cond_vec![]` is recommended for usage
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")])
+    /// .condition(cond_vec![("test1", Operator::Equal, "$test1"), Operator::And, ("test2", Operator::Equal, "$test2"), Operator::Or, "test", Operator::Or, (Operator::Not, "test")]);
+    /// // The above builder becomes `UPDATE test SET test = 'test' WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
     ///
-    ///     // Other method of using the multi conditions
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
-    ///     // The above builder becomes `UPDATE test SET test = 'test' WHERE test AND name <= $name`
+    /// // Other method of using the multi conditions
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]).condition(vec![Condition::from("test"), Condition::from(Operator::And), Condition::from(("name", Operator::LessThanOrEqual, "$name"))]);
+    /// // The above builder becomes `UPDATE test SET test = 'test' WHERE test AND name <= $name`
     ///
-    ///     // It is also possible to type the condition like normal
-    ///     UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")])
-    ///     .condition("test1 = $test1 AND test2 = $test2 or test or !test");
+    /// // It is also possible to type the condition like normal
+    /// UpdateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")])
+    /// .condition("test1 = $test1 AND test2 = $test2 or test or !test");
     ///      // The above builder becomes `UPDATE test SET test = 'test' WHERE test1 = $test1 AND test2 = $test2 OR test OR !test`
-    ///
-    /// }
     /// ```
     ///
     /// ## The fastest way to query is to use the string format for conditions at least from benchmarks

@@ -8,10 +8,9 @@ members = [
 ]
 
 [workspace.dependencies]
-surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", rev = "e0f357c18a62e8998ad03055cf4c37e1b7342c3d" }
-#surrealdb = { package = "surrealdb", version = "2.0.1" }
+surrealdb = { package = "surrealdb", version = "2.0.2" }
 
 [workspace.package]
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 rust-version = "1.80.0"

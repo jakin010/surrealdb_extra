@@ -12,7 +12,7 @@ use crate::query::parsing::unset_expression::UnsetExpression;
 use crate::query::parsing::what::ExtraValue;
 use crate::query::states::{FilledData, FilledWhat, NoData, NoWhat};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CreateBuilder<T, D> {
     pub statement: CreateStatement,
     pub(crate) what_state: PhantomData<T>,
@@ -36,11 +36,10 @@ impl CreateBuilder<NoWhat, NoData> {
     /// use surrealdb::sql::Thing;
     /// use surrealdb_extra::query::create::CreateBuilder;
     ///
-    /// fn main() {
-    ///     CreateBuilder::new().what("test");
+    /// CreateBuilder::new().what("test");
     ///
-    ///     CreateBuilder::new().what(Thing::from(("test", "test")));
-    /// }
+    /// CreateBuilder::new().what(Thing::from(("test", "test")));
+    ///
     /// ```
     ///
     /// You can also use the Value type inside surrealdb for more complex requests
@@ -80,14 +79,12 @@ impl CreateBuilder<FilledWhat, NoData> {
     /// use surrealdb::sql::Operator;
     /// use surrealdb_extra::query::create::CreateBuilder;
     ///
-    /// fn main() {
-    ///     CreateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]);
-    ///     // The above builder becomes `CREATE test SET test = 'test'
+    /// CreateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test")]);
+    /// // The above builder becomes `CREATE test SET test = 'test'
     ///
-    ///     CreateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
-    ///     // The above builder becomes `CREATE test SET test = 'test', test2 = 'test2'
+    /// CreateBuilder::new().what("test").set(vec![("test", Operator::Equal, "test"), ("test2", Operator::Equal, "test2")]);
+    /// // The above builder becomes `CREATE test SET test = 'test', test2 = 'test2'
     ///
-    /// }
     pub fn set(self, set: impl Into<SetExpression>) -> CreateBuilder<FilledWhat, FilledData> {
         let Self { mut statement, .. } = self;
 
@@ -109,14 +106,12 @@ impl CreateBuilder<FilledWhat, NoData> {
     /// ```rust
     /// use surrealdb_extra::query::create::CreateBuilder;
     ///
-    /// fn main() {
-    ///     CreateBuilder::new().what("test").unset(vec!["test"]);
-    ///     // The above builder becomes `CREATE test UNSET test
+    /// CreateBuilder::new().what("test").unset(vec!["test"]);
+    /// // The above builder becomes `CREATE test UNSET test
     ///
-    ///     CreateBuilder::new().what("test").unset(vec!["test", "test"]);
-    ///     // The above builder becomes `CREATE test UNSET test, test
+    /// CreateBuilder::new().what("test").unset(vec!["test", "test"]);
+    /// // The above builder becomes `CREATE test UNSET test, test
     ///
-    /// }
     pub fn unset(self, set: impl Into<UnsetExpression>) -> CreateBuilder<FilledWhat, FilledData> {
         let Self { mut statement, .. } = self;
 
@@ -145,11 +140,9 @@ impl CreateBuilder<FilledWhat, NoData> {
     ///     magic: bool
     /// }
     ///
-    /// fn main() {
-    ///     CreateBuilder::new().what("test").content(Test { test: "test".to_string(), magic: true });
-    ///     // The above builder becomes `CREATE test CONTENT { test: "test", magic: true }
+    /// CreateBuilder::new().what("test").content(Test { test: "test".to_string(), magic: true });
+    /// // The above builder becomes `CREATE test CONTENT { test: "test", magic: true }
     ///
-    /// }
     pub fn content(self, content: impl Serialize + 'static) -> CreateBuilder<FilledWhat, FilledData> {
         let Self { mut statement, .. } = self;
 
