@@ -145,7 +145,7 @@ pub trait Table: Serialize + DeserializeOwned + Send + Sync + 'static
     }
 
     #[cfg(feature = "query")]
-    fn select_builder<C: Connection>(id: Option<String>) -> SelectBuilder<FilledWhat, NoFields, NoCond> {
+    fn select_builder(id: Option<String>) -> SelectBuilder<FilledWhat, NoFields, NoCond> {
         if let Some(id) = id {
             return SelectBuilder::new().what(Thing::from((Self::TABLE_NAME, id.as_str())))
         }
