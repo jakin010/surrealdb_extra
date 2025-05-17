@@ -12,7 +12,7 @@ use surrealdb::sql::{Field, Operator, Value, Expression};
 use surrealdb::Surreal;
 use surrealdb_extra::query::parsing::cond::Condition;
 use tokio::runtime::Runtime;
-use surrealdb_extra::{cond_vec, op};
+use surrealdb_extra::{cond_vec, order_vec, op};
 use surrealdb_extra::query::parsing::order::OrderDirection;
 use surrealdb_extra::query::select::SelectBuilder;
 use surrealdb_extra::table::Table;
@@ -335,7 +335,7 @@ fn select_builder_with_more_options_benchmark(c: &mut Criterion) {
 
                 let start = Instant::now();
                 for _i in 0..iters {
-                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).limit(5).start(2).order(("test", OrderDirection::DESC)).order(("test", OrderDirection::ASC)).to_query(&db);
+                    let _select = SelectBuilder::new().what(Test::TABLE_NAME).field(Field::All).limit(5).start(2).order(order_vec![("test", OrderDirection::DESC), ("test", OrderDirection::ASC)]).to_query(&db);
                 }
                 start.elapsed()
             })

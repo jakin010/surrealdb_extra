@@ -39,7 +39,7 @@
 use std::marker::PhantomData;
 use surrealdb::{Connection, Surreal};
 use surrealdb::method::Query;
-use surrealdb::sql::{Explain, Fetchs, Groups, Idioms, Orders, Splits};
+use surrealdb::sql::{Explain, Fetchs, Groups, Idioms, Splits};
 use surrealdb::sql::statements::SelectStatement;
 use crate::query::parsing::cond::ExtraCond;
 use crate::query::parsing::fetch::ExtraFetch;
@@ -47,7 +47,7 @@ use crate::query::parsing::field::ExtraField;
 use crate::query::parsing::group::ExtraGroup;
 use crate::query::parsing::limit::ExtraLimit;
 use crate::query::parsing::omit::ExtraOmit;
-use crate::query::parsing::order::ExtraOrder;
+use crate::query::parsing::order::ExtraOrdering;
 use crate::query::parsing::split::ExtraSplit;
 use crate::query::parsing::start::ExtraStart;
 use crate::query::parsing::timeout::ExtraTimeout;
@@ -289,27 +289,32 @@ impl<C> SelectBuilder<FilledWhat, FilledFields, C> {
     ///
     /// Example:
     /// ```rust
+    /// use surrealdb::sql::Ordering;
     /// use surrealdb_extra::query::parsing::order::OrderDirection;
+    /// use surrealdb_extra::order_vec;
     /// use surrealdb_extra::query::select::SelectBuilder;
     ///
-    /// SelectBuilder::new().what("test").field("test").order(("test", OrderDirection::ASC)); // This becomes `SELECT test FROM test ORDER BY test ASC`
+    /// SelectBuilder::new().what("test").field("test").order(order_vec![("test", OrderDirection::ASC)]); // This becomes `SELECT test FROM test ORDER BY test ASC`
     ///
-    /// SelectBuilder::new().what("test").field(("test", "test")).order(("test".to_string(), OrderDirection::DESC)); // This becomes `SELECT test as test FROM test ORDER BY test DESC`
+    /// SelectBuilder::new().what("test").field(("test", "test")).order(order_vec![("test".to_string(), OrderDirection::DESC)]); // This becomes `SELECT test as test FROM test ORDER BY test DESC`
     ///
-    /// SelectBuilder::new().what("test").field(("test.test", "test")).order(("test1".to_string(), OrderDirection::DESC)).order((("test2", OrderDirection::ASC))); // This becomes `SELECT test.test as test FROM test ORDER BY test1 DESC, test2 ASC`
+    /// SelectBuilder::new().what("test").field(("test.test", "test")).order(order_vec![("test1".to_string(), OrderDirection::DESC), ("test2", OrderDirection::ASC)]); // This becomes `SELECT test.test as test FROM test ORDER BY test1 DESC, test2 ASC`
+    ///
+    /// SelectBuilder::new().what("test").field(("test.test", "test")).order(Ordering::Random); // This becomes `SELECT test.test as test FROM test ORDER BY RAND()`
     ///
     /// ```
-    /// You can also use the Order type inside surrealdb for more complex requests
-    pub fn order(self, order: impl Into<ExtraOrder>) -> Self {
+    /// You can also use the Ordering type inside surrealdb for more complex requests
+    pub fn order(self, order: impl Into<ExtraOrdering>) -> Self {
         let Self { mut statement, .. } = self;
 
-        let mut orders = statement.order.unwrap_or(
-            Orders::default()
-        );
-
-        orders.0.push(order.into().0);
-
-        statement.order = Some(orders);
+        statement.order = Some(order.into().0);
+        // let mut orders = statement.order.unwrap_or(
+        //     Ordering::Order(OrderList::default())
+        // );
+        //
+        // orders.0.push(order.into().0);
+        //
+        // statement.order = Some(orders);
 
         Self {
             statement,

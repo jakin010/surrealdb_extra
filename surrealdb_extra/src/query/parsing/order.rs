@@ -1,4 +1,4 @@
-use surrealdb::sql::{Idiom, Order};
+use surrealdb::sql::{Idiom, Order, OrderList, Ordering};
 use crate::query::parsing::idiom::ExtraIdiom;
 
 pub enum OrderDirection {
@@ -16,11 +16,39 @@ impl OrderDirection {
 }
 
 #[derive(Debug, Clone)]
+pub struct ExtraOrdering(pub Ordering);
+
+#[derive(Debug, Clone)]
 pub struct ExtraOrder(pub Order);
 
-impl From<Order> for ExtraOrder {
-    fn from(value: Order) -> Self {
+impl From<Ordering> for ExtraOrdering {
+    fn from(value: Ordering) -> Self {
         Self(value)
+    }
+}
+
+impl From<OrderList> for ExtraOrdering {
+    fn from(value: OrderList) -> Self {
+        Self(Ordering::Order(value))
+    }
+}
+
+impl From<Vec<Order>> for ExtraOrdering {
+    fn from(value: Vec<Order>) -> Self {
+        let mut list = OrderList::default();
+        list.0 = value;
+
+        Self(Ordering::Order(list))
+    }
+}
+
+impl From<Vec<ExtraOrder>> for ExtraOrdering {
+    fn from(value: Vec<ExtraOrder>) -> Self {
+        let value = value.into_iter().map(|x| x.0).collect();
+        let mut list = OrderList::default();
+        list.0 = value;
+
+        Self(Ordering::Order(list))
     }
 }
 
@@ -30,8 +58,7 @@ impl From<(&str, OrderDirection)> for ExtraOrder {
         let direction = value.1.to_bool();
 
         let mut order = Order::default();
-        order.order = idiom.0;
-        order.random = false;
+        order.value = idiom.0;
         order.collate = false;
         order.numeric = false;
         order.direction = direction;
@@ -46,8 +73,7 @@ impl From<(String, OrderDirection)> for ExtraOrder {
         let direction = value.1.to_bool();
 
         let mut order = Order::default();
-        order.order = idiom.0;
-        order.random = false;
+        order.value = idiom.0;
         order.collate = false;
         order.numeric = false;
         order.direction = direction;
@@ -61,12 +87,20 @@ impl From<(Idiom, OrderDirection)> for ExtraOrder {
         let direction = value.1.to_bool();
 
         let mut order = Order::default();
-        order.order = value.0;
-        order.random = false;
+        order.value = value.0;
         order.collate = false;
         order.numeric = false;
         order.direction = direction;
 
         Self(order)
     }
+}
+
+#[macro_export]
+macro_rules! order_vec {
+    ($($x:expr),+ $(,)?) => [
+        $crate::query::parsing::order::ExtraOrdering::from(
+            std::vec::Vec::<$crate::query::parsing::order::ExtraOrder>::from([$($crate::query::parsing::order::ExtraOrder::from($x)),+])
+        )
+    ];
 }
