@@ -7,10 +7,7 @@
 
 pub use surrealdb_extra_derive::Table;
 
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-
-pub trait Table: Serialize + DeserializeOwned {
+pub trait Table {
     const TABLE_NAME: &'static str;
 
     fn create_record_id(id: impl Into<surrealdb::types::RecordIdKey>) -> surrealdb::types::RecordId {
