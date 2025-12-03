@@ -1,248 +1,102 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
-use surrealdb::{Error, Surreal};
-use surrealdb::engine::any::{Any, connect};
-use surrealdb_extra::query::select::SelectBuilder;
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use surrealdb::types::{SurrealValue, Value, Number, Object};
 use surrealdb_extra::table::Table;
+use surrealdb_extra::surreal_value_json::SurrealValueJson;
 
 #[allow(dead_code)]
 #[derive(Debug, Default, Table, Serialize, Deserialize, Clone, PartialEq)]
 #[table(name = "test_test")]
-pub struct Test {
-    id: Option<Thing>,
+pub struct Test1;
+
+#[derive(Debug, Serialize, Deserialize, SurrealValueJson, Eq, PartialEq)]
+#[surreal_value_json(kind = "Object")]
+struct Test2 {
     name: String,
-    n: Option<usize>,
 }
 
-async fn database() -> Surreal<Any> {
-    let db = connect("mem://").await.unwrap();
+#[derive(Debug, Serialize_repr, Deserialize_repr, SurrealValueJson, Eq, PartialEq)]
+#[surreal_value_json(kind = "Int")]
+#[repr(u8)]
+enum Test3 {
+    Test = 1
+}
 
-    db.use_ns("ns").use_db("db").await.unwrap();
-
-    db
+#[derive(Debug, Serialize, Deserialize, SurrealValueJson)]
+struct Test4 {
+    name: String,
 }
 
 #[test]
 fn table_derive_init() {
-    assert_eq!("test_test", Test::TABLE_NAME)
+    assert_eq!("test_test", Test1::TABLE_NAME)
 }
 
 #[test]
-fn table_derive_get_id() {
-    let t = Test {
-        id: Some(Thing::from(("test", "test"))),
-        name: "".to_string(),
-        ..Test::default()
-    };
-    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test", "test")))
-}
-
-#[test]
-fn table_derive_set_id() {
-    let mut t = Test {
-        name: "".to_string(),
-        ..Test::default()
-    };
-
-    t.set_id("test");
-
-    assert_eq!(t.get_id().clone().unwrap(), Thing::from(("test_test", "test")))
-}
-
-#[tokio::test]
-async fn table_create() {
-    let db = database().await;
-
-    let t = Test {
-        id: None,
+fn surreal_value_json_into_object() {
+    let test = Test2 {
         name: "test".to_string(),
-        ..Test::default()
     };
 
-    let tc = t.clone().create(&db).await.unwrap();
-
-    assert_eq!(t.name, tc.unwrap().name);
+    let val = test.into_value();
+    assert!(matches!(val, Value::Object(_)))
 }
 
-#[tokio::test]
-async fn table_db_get_by_id() {
-    let db = database().await;
-
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
+#[test]
+fn surreal_value_json_from_object() {
+    let test = Test2 {
+        name: "test".to_string(),
     };
 
-    let tc = t.create(&db).await.unwrap();
+    let mut obj = Object::new();
+    obj.insert("name", "test");
 
-    let tc = tc.unwrap();
-    let tc_id = tc.clone().id.unwrap();
+    let object = Value::Object(obj);
 
-    let op_t = Test::get_by_id(&db, tc_id.id.to_raw()).await.unwrap();
+    let res = Test2::from_value(object);
 
-    assert!(op_t.is_some());
-    assert_eq!(op_t.unwrap().get_id().clone().unwrap(), tc_id)
-}
-
-#[tokio::test]
-async fn table_delete() {
-    let db = database().await;
-
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
-    };
-
-    let tc = t.create(&db).await.unwrap();
-
-    let tc_id = tc.unwrap().clone().id;
-
-    assert!(tc_id.is_some());
-
-    let td = Test::delete(&db, tc_id.unwrap().id.to_raw()).await.unwrap();
-
-    let op_td = Test::get_by_id(&db, td.unwrap().get_id().clone().unwrap().id.to_raw()).await.unwrap();
-
-    assert!(op_td.is_none())
-}
-
-#[tokio::test]
-async fn table_get_all() {
-    let db = database().await;
-
-    for _ in 0..10 {
-        let t = Test {
-            id: None,
-            name: "test data".to_string(),
-            ..Test::default()
-        };
-
-        let _ = t.create(&db).await.unwrap();
+    match res {
+        Ok(val) => assert_eq!(val, test),
+        Err(_) => assert!(false),
     }
-
-    let vt = Test::get_all(&db).await.unwrap();
-
-    assert_eq!(vt.len(), 10);
 }
 
-#[tokio::test]
-async fn table_update() {
-    let db = database().await;
+#[test]
+fn surreal_value_json_into_int() {
+    let test = Test3::Test;
 
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
-    };
+    let val = test.into_value();
 
-    let tc = t.create(&db).await.unwrap();
-
-    let mut tc = tc.unwrap().clone();
-
-    tc.name = "test".to_string();
-
-    let tu = tc.clone().update(&db).await.unwrap();
-
-    assert!(tu.is_some());
-    assert_eq!(tu.unwrap().name, tc.name);
+    match val {
+        Value::Number(n) => {
+            match n {
+                Number::Int(i) => assert_eq!(i, 1),
+                _ => assert!(false)
+            }
+        }
+        _ => assert!(false)
+    }
 }
 
-#[tokio::test]
-async fn select_field() {
-    let db = database().await;
+#[test]
+fn surreal_value_json_from_int() {
+    let test = Test3::Test;
 
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
-    };
+    let num = Value::Number(Number::Int(1));
+    let res = Test3::from_value(num);
 
-    let tc = t.create(&db).await.unwrap();
-    let tc = tc.unwrap().clone();
-
-    let mut q = SelectBuilder::new().what(Test::TABLE_NAME).field("name").to_query(&db).await.unwrap();
-
-    let res: Vec<Test> = q.take(0).unwrap();
-
-    let test_res = res.first().unwrap().clone();
-
-    assert_eq!(tc.name, test_res.name);
-
-    assert!(test_res.id.is_none());
-
-    assert_ne!(tc.id, test_res.id);
+    match res {
+        Ok(val) => assert_eq!(val, test),
+        Err(_) => assert!(false)
+    }
 }
 
-#[tokio::test]
-async fn select_id_name_not_selected_error() {
-    let db = database().await;
-
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
+#[test]
+fn surreal_value_json_into_object_no_kind_specified() {
+    let test = Test4 {
+        name: "test".to_string(),
     };
 
-    let _tc = t.create(&db).await.unwrap();
-
-    let mut q = SelectBuilder::new().what(Test::TABLE_NAME).field("id").to_query(&db).await.unwrap();
-
-    let res: Result<Vec<Test>, Error> = q.take(0);
-
-    assert!(res.is_err());
-}
-
-#[tokio::test]
-async fn select_id_name_selected_success() {
-    let db = database().await;
-
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
-    };
-
-    let tc = t.create(&db).await.unwrap();
-    let tc = tc.unwrap().clone();
-
-    let mut q = SelectBuilder::new().what(Test::TABLE_NAME).field("id").field("name").to_query(&db).await.unwrap();
-
-    let res: Vec<Test> = q.take(0).unwrap();
-
-    let test_res = res.first().unwrap().clone();
-
-    assert_eq!(tc.name, test_res.name);
-
-    assert!(test_res.id.is_some());
-
-    assert_eq!(tc.id, test_res.id);
-}
-
-#[tokio::test]
-async fn create_builder() {
-    let db = database().await;
-
-    let t = Test {
-        id: None,
-        name: "test data".to_string(),
-        ..Test::default()
-    };
-
-    let query = t.create_builder().only().output("name").to_query(&db);
-
-    let res = query.await;
-
-    assert!(res.is_ok());
-
-    let test: Option<Test> = res.unwrap().take(0).unwrap();
-
-    assert!(test.is_some());
-
-    let test = test.unwrap();
-
-    assert!(!test.name.is_empty());
-
-    assert!(test.id.is_none());
+    let val = test.into_value();
+    assert!(matches!(val, Value::Object(_)))
 }
