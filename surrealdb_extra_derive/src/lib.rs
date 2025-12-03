@@ -1,12 +1,17 @@
-mod table;
 mod common;
+#[cfg(feature = "surreal_value_json")]
 mod surreal_value_json;
+#[cfg(feature = "table")]
+mod table;
 
+#[cfg(feature = "surreal_value_json")]
 use crate::surreal_value_json::kind::get_kind;
+#[cfg(feature = "table")]
 use crate::table::name::get_table_name;
+
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{DeriveInput, parse_macro_input};
 
 #[cfg(feature = "table")]
 #[proc_macro_derive(Table, attributes(table))]
@@ -34,7 +39,8 @@ pub fn surreal_json(input: TokenStream) -> TokenStream {
     let kind_str = get_kind(&input).unwrap_or("Any".to_string());
 
     // Parse the string as actual Rust code
-    let kind_tokens: proc_macro2::TokenStream = kind_str.parse().expect("Invalid Rust syntax in kind");
+    let kind_tokens: proc_macro2::TokenStream =
+        kind_str.parse().expect("Invalid Rust syntax in kind");
 
     let expanded = quote! {
         impl surrealdb_extra::surreal_value_json::SurrealValue for #struct_name {

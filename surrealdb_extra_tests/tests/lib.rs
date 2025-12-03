@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use surrealdb::types::{SurrealValue, Value, Number, Object};
-use surrealdb_extra::table::Table;
+use surrealdb::types::{Number, Object, SurrealValue, Value};
 use surrealdb_extra::surreal_value_json::SurrealValueJson;
+use surrealdb_extra::table::Table;
 
 #[allow(dead_code)]
 #[derive(Debug, Default, Table, Serialize, Deserialize, Clone, PartialEq)]
@@ -19,7 +20,7 @@ struct Test2 {
 #[surreal_value_json(kind = "Int")]
 #[repr(u8)]
 enum Test3 {
-    Test = 1
+    Test = 1,
 }
 
 #[derive(Debug, Serialize, Deserialize, SurrealValueJson)]
@@ -68,13 +69,11 @@ fn surreal_value_json_into_int() {
     let val = test.into_value();
 
     match val {
-        Value::Number(n) => {
-            match n {
-                Number::Int(i) => assert_eq!(i, 1),
-                _ => assert!(false)
-            }
-        }
-        _ => assert!(false)
+        Value::Number(n) => match n {
+            Number::Int(i) => assert_eq!(i, 1),
+            _ => assert!(false),
+        },
+        _ => assert!(false),
     }
 }
 
@@ -82,12 +81,25 @@ fn surreal_value_json_into_int() {
 fn surreal_value_json_from_int() {
     let test = Test3::Test;
 
+    let num = json!(1).into_value();
+    let res = Test3::from_value(num);
+
+    match res {
+        Ok(val) => assert_eq!(val, test),
+        Err(_) => assert!(false),
+    }
+}
+
+#[test]
+fn surreal_value_json_from_value_int() {
+    let test = Test3::Test;
+
     let num = Value::Number(Number::Int(1));
     let res = Test3::from_value(num);
 
     match res {
         Ok(val) => assert_eq!(val, test),
-        Err(_) => assert!(false)
+        Err(_) => assert!(false),
     }
 }
 
