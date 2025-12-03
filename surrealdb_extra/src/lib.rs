@@ -3,10 +3,5 @@
 #[cfg(feature = "table")]
 pub mod table;
 
-#[cfg_attr(docsrs, doc(cfg(feature = "query")))]
-#[cfg(feature = "query")]
-pub mod query;
-
-#[cfg_attr(docsrs, doc(cfg(feature = "query")))]
-#[cfg(feature = "query")]
-pub use ::paste::item;
+#[cfg(feature = "surreal_value_json")]
+pub mod surreal_value_json;

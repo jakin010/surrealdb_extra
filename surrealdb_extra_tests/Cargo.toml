@@ -2,7 +2,6 @@
 name = "surrealdb_extra_tests"
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 readme = "crates-io.md"
 documentation = "https://docs.rs/surrealdb_extra"
 repository = "https://github.com/jakin010/surrealdb_extra"
@@ -10,11 +9,12 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra = { path = "../surrealdb_extra", features = ["default", "query"] }
+surrealdb_extra = { path = "../surrealdb_extra", features = ["table", "surreal_value_json"] }
 surrealdb_extra_derive = { path = "../surrealdb_extra_derive" }
-surrealdb = { workspace = true, features = ["kv-mem", "scripting"] }
-serde = { version = "1.0.195", features = ["derive"] }
-tokio = { version = "1.35.1", features = ["rt", "macros"] }
+surrealdb = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_repr = "0.1.20"
 
 [[test]]
 name = "surrealdb_extra_tests"
