@@ -16,6 +16,10 @@ surrealdb = { workspace = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 
+[dev-dependencies]
+serde = { workspace = true }
+serde_repr = { version = "0.1.20" }
+
 [features]
 default = ["table"]
 table = ["surrealdb_extra_derive/table", "serde"]

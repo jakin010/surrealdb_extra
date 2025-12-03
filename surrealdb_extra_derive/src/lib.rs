@@ -30,15 +30,14 @@ pub fn table(input: TokenStream) -> TokenStream {
 pub fn surreal_json(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    // let root = crate
     let struct_name = &input.ident;
-    let kind_str = get_kind(&input).unwrap_or("Object".to_string());
+    let kind_str = get_kind(&input).unwrap_or("Any".to_string());
 
     // Parse the string as actual Rust code
     let kind_tokens: proc_macro2::TokenStream = kind_str.parse().expect("Invalid Rust syntax in kind");
 
     let expanded = quote! {
-        impl SurrealValue for #struct_name {
+        impl surrealdb_extra::surreal_value_json::SurrealValue for #struct_name {
             fn kind_of() -> surrealdb_extra::surreal_value_json::Kind {
                 surrealdb_extra::surreal_value_json::Kind::#kind_tokens
             }
