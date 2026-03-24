@@ -11,18 +11,18 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.11.0", path = "../surrealdb_extra_derive" }
+surrealdb_extra_derive = { version = "0.12", path = "../surrealdb_extra_derive" }
 surrealdb = { workspace = true }
-serde_json = { workspace = true, optional = true }
 
 [dev-dependencies]
 serde = { workspace = true }
 serde_repr = { version = "0.1.20" }
+serde_json.workspace = true
 
 [features]
 default = ["table"]
 table = ["surrealdb_extra_derive/table"]
-surreal_value_json = ["surrealdb_extra_derive/surreal_value_json", "serde_json"]
+surreal_value_json = ["surrealdb_extra_derive/surreal_value_json"]
 
 # docs.rs-specific configuration
 [package.metadata.docs.rs]

@@ -43,21 +43,20 @@ pub fn surreal_json(input: TokenStream) -> TokenStream {
         kind_str.parse().expect("Invalid Rust syntax in kind");
 
     let expanded = quote! {
-        impl surrealdb_extra::surreal_value_json::SurrealValue for #struct_name {
-            fn kind_of() -> surrealdb_extra::surreal_value_json::Kind {
-                surrealdb_extra::surreal_value_json::Kind::#kind_tokens
+        impl surrealdb::types::SurrealValue for #struct_name {
+            fn kind_of() -> surrealdb::types::Kind {
+                surrealdb::types::Kind::#kind_tokens
             }
 
-            fn into_value(self) -> surrealdb_extra::surreal_value_json::Value {
-                surrealdb_extra::surreal_value_json::json!(self).into_value()
+            fn into_value(self) -> surrealdb::types::Value {
+                serde_json::json!(self).into_value()
             }
 
-            fn from_value(value: surrealdb_extra::surreal_value_json::Value) -> surrealdb_extra::surreal_value_json::anyhow::Result<Self>
+            fn from_value(value: surrealdb::types::Value) -> surrealdb::Result<Self>
             where
                 Self: Sized
             {
-                let val = surrealdb_extra::surreal_value_json::from_value(value.into_json_value())?;
-                Ok(val)
+                serde_json::from_value::<>(value.into_json_value()).map_err(|e| surrealdb::Error::serialization(e.to_string(), None))
             }
         }
     };

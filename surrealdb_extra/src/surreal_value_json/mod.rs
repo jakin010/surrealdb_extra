@@ -1,5 +1,3 @@
-pub use serde_json::{from_value, json};
-pub use surrealdb::types::{Kind, SurrealValue, Value, anyhow};
 /// Derives the `SurrealValue` trait for a struct or enum.
 ///
 /// This macro simplifies the process of integrating custom Rust types with `surrealdb_extra`'s
