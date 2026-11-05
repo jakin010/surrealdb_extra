@@ -11,7 +11,7 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.12", path = "../surrealdb_extra_derive" }
+surrealdb_extra_derive = { version = "0.13", path = "../surrealdb_extra_derive" }
 surrealdb = { workspace = true }
 
 [features]
