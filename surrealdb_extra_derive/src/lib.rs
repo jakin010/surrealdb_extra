@@ -1,11 +1,9 @@
 mod common;
-#[cfg(feature = "surreal_value_json")]
-mod surreal_value_json;
+#[cfg(feature = "repr")]
+mod repr;
 #[cfg(feature = "table")]
 mod table;
 
-#[cfg(feature = "surreal_value_json")]
-use crate::surreal_value_json::kind::get_kind;
 #[cfg(feature = "table")]
 use crate::table::name::get_table_name;
 
@@ -19,7 +17,10 @@ pub fn table(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let struct_name = &input.ident;
-    let table_name = get_table_name(&input).unwrap();
+    let table_name = match get_table_name(&input) {
+        Ok(name) => name,
+        Err(e) => return e.into_compile_error().into(),
+    };
 
     let expanded = quote! {
         impl Table for #struct_name {
@@ -30,36 +31,11 @@ pub fn table(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-#[cfg(feature = "surreal_value_json")]
-#[proc_macro_derive(SurrealValueJson, attributes(surreal_value_json))]
-pub fn surreal_json(input: TokenStream) -> TokenStream {
+#[cfg(feature = "repr")]
+#[proc_macro_derive(SurrealValueRepr, attributes(surreal_repr))]
+pub fn surreal_value_repr(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-
-    let struct_name = &input.ident;
-    let kind_str = get_kind(&input).unwrap_or("Any".to_string());
-
-    // Parse the string as actual Rust code
-    let kind_tokens: proc_macro2::TokenStream =
-        kind_str.parse().expect("Invalid Rust syntax in kind");
-
-    let expanded = quote! {
-        impl surrealdb::types::SurrealValue for #struct_name {
-            fn kind_of() -> surrealdb::types::Kind {
-                surrealdb::types::Kind::#kind_tokens
-            }
-
-            fn into_value(self) -> surrealdb::types::Value {
-                serde_json::json!(self).into_value()
-            }
-
-            fn from_value(value: surrealdb::types::Value) -> surrealdb::Result<Self>
-            where
-                Self: Sized
-            {
-                serde_json::from_value::<>(value.into_json_value()).map_err(|e| surrealdb::Error::serialization(e.to_string(), None))
-            }
-        }
-    };
-
-    TokenStream::from(expanded)
+    repr::expand(input)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }

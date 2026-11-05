@@ -1,0 +1,7 @@
+error: #[surreal_repr(other)] cannot be combined with kind = "literal": the schema would reject the values `other` is meant to catch
+ --> tests/ui/fail/other_literal.rs:2:10
+  |
+2 | #[derive(SurrealValueRepr)]
+  |          ^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the derive macro `SurrealValueRepr` (in Nightly builds, run with -Z macro-backtrace for more info)

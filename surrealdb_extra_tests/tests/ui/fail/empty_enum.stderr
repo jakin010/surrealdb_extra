@@ -1,0 +1,15 @@
+error: SurrealValueRepr requires at least one variant
+ --> tests/ui/fail/empty_enum.rs:1:10
+  |
+1 | #[derive(surrealdb_extra::repr::SurrealValueRepr)]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the derive macro `surrealdb_extra::repr::SurrealValueRepr` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+ --> tests/ui/fail/empty_enum.rs:2:8
+  |
+2 | #[repr(u8)]
+  |        ^^
+3 | enum E {}
+  | ------ zero-variant enum

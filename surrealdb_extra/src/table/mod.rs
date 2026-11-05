@@ -1,8 +1,23 @@
 //! The `Table` trait represents a database table
 //!
-//! To use this trait, implement it for your struct representing the table. The struct must have the following attributes:
-//! - `#[derive(Table)]` to automatically derive the implementation of the `Table` trait.
-//! - `#[table(name = "...")]` to specify the name of the table in the database.
+//! Derive it on the struct that represents a table:
+//! - `#[derive(Table)]` implements the `Table` trait.
+//! - `#[table(name = "...")]` sets the table name. It is optional: without it, the name is the
+//!   struct name in snake_case (`UserProfile` becomes `user_profile`).
+//!
+//! ```rust
+//! use surrealdb_extra::table::Table;
+//!
+//! #[derive(Table)]
+//! struct UserProfile;
+//!
+//! #[derive(Table)]
+//! #[table(name = "people")]
+//! struct Person;
+//!
+//! assert_eq!(UserProfile::TABLE_NAME, "user_profile");
+//! assert_eq!(Person::TABLE_NAME, "people");
+//! ```
 
 pub use surrealdb_extra_derive::Table;
 

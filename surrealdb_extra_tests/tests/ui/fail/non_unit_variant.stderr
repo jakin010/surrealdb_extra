@@ -1,0 +1,5 @@
+error: SurrealValueRepr requires unit variants (no fields)
+ --> tests/ui/fail/non_unit_variant.rs:3:13
+  |
+3 | enum E { A, B(u8) }
+  |             ^^^^^

@@ -3,7 +3,7 @@
 
 Surrealdb-extra is a crate that provides additional functionality and utilities for working with the SurrealDB database.
 
-This crate extends the capabilities of SurrealDB crate by introducing additional features such as a table trait and surreal value json trait, which simplify the process of constructing and executing database queries.
+This crate extends the capabilities of SurrealDB crate by introducing additional features such as a table trait and a derive that stores fieldless enums as integers (`repr` feature), which simplify the process of constructing and executing database queries.
 
 Key Features:
 - Table Trait: Define database tables

@@ -9,13 +9,14 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra = { path = "../surrealdb_extra", features = ["table", "surreal_value_json"] }
+surrealdb_extra = { path = "../surrealdb_extra", features = ["table", "repr"] }
 surrealdb_extra_derive = { path = "../surrealdb_extra_derive" }
-surrealdb = { workspace = true }
+surrealdb = { workspace = true, features = ["kv-mem"] }
 serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
-serde_repr = "0.1.20"
-anyhow = "1.0.102"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[dev-dependencies]
+trybuild = "1"
 
 [[test]]
 name = "surrealdb_extra_tests"

@@ -3,5 +3,5 @@
 #[cfg(feature = "table")]
 pub mod table;
 
-#[cfg(feature = "surreal_value_json")]
-pub mod surreal_value_json;
+#[cfg(feature = "repr")]
+pub mod repr;

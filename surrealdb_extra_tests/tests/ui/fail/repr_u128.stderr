@@ -1,0 +1,5 @@
+error: #[repr(i128)] / #[repr(u128)] is not supported: surrealdb has no SurrealValue impl for 128-bit integers
+ --> tests/ui/fail/repr_u128.rs:2:8
+  |
+2 | #[repr(u128)]
+  |        ^^^^
