@@ -1,3 +1,7 @@
+// The embedded database makes this test binary large enough that the macOS linker warns
+// about its unwind table. It is harmless.
+#![allow(linker_messages)]
+
 pub(crate) mod repr;
 
 use serde::{Deserialize, Serialize};

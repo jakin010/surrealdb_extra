@@ -10,19 +10,19 @@ pub(crate) fn get_attr_value(
             let nested = attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
 
             for meta in nested {
-                if let Meta::NameValue(mnv) = meta {
-                    if mnv.path.is_ident(key_ident) {
-                        if let Expr::Lit(expr_lit) = &mnv.value {
-                            if let Lit::Str(lit_str) = &expr_lit.lit {
-                                return Ok(Some(lit_str.value()));
-                            }
-                        }
-
-                        return Err(Error::new(
-                            mnv.value.span(),
-                            format!("Expected a string literal for `{}`", key_ident),
-                        ));
+                if let Meta::NameValue(mnv) = meta
+                    && mnv.path.is_ident(key_ident)
+                {
+                    if let Expr::Lit(expr_lit) = &mnv.value
+                        && let Lit::Str(lit_str) = &expr_lit.lit
+                    {
+                        return Ok(Some(lit_str.value()));
                     }
+
+                    return Err(Error::new(
+                        mnv.value.span(),
+                        format!("Expected a string literal for `{}`", key_ident),
+                    ));
                 }
             }
         }
