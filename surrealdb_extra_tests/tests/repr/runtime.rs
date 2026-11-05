@@ -1,5 +1,5 @@
-use surrealdb::types::{Decimal, Kind, KindLiteral, Number, SurrealValue, Value};
 use surrealdb_extra::repr::SurrealValueRepr;
+use surrealdb_extra::types::{Decimal, Kind, KindLiteral, Number, SurrealValue, Value};
 
 #[derive(Debug, PartialEq, SurrealValueRepr)]
 #[repr(u8)]
@@ -61,7 +61,7 @@ enum One {
 
 // explicit crate path
 pub(crate) mod alias {
-    pub use surrealdb::types as t;
+    pub use surrealdb_extra::types as t;
 }
 #[derive(Debug, PartialEq, SurrealValueRepr)]
 #[repr(u8)]
@@ -184,7 +184,7 @@ fn kind_of_shapes() {
     assert_eq!(Big::kind_of(), Kind::Either(vec![lit(1), Kind::Number]));
     println!(
         "Status kind: {}",
-        surrealdb::types::ToSql::to_sql(&Status::kind_of())
+        surrealdb_extra::types::ToSql::to_sql(&Status::kind_of())
     );
 }
 

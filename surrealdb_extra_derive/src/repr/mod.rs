@@ -25,7 +25,10 @@ const SUPPORTED_REPRS: &[&str] = &[
 ];
 
 fn parse_container(input: &DeriveInput) -> Result<Container> {
-    let mut krate: Path = syn::parse_quote!(::surrealdb::types);
+    let mut krate: Path = {
+        let base = crate::common::crate_path::surrealdb_extra_path();
+        syn::parse_quote!(#base::types)
+    };
     let mut kind = None;
     for attr in input
         .attrs

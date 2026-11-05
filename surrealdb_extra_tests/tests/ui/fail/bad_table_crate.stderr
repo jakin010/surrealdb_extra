@@ -1,0 +1,5 @@
+error: invalid path in #[table(crate = "not a path")]: unexpected token
+ --> tests/ui/fail/bad_table_crate.rs:2:17
+  |
+2 | #[table(crate = "not a path")]
+  |                 ^^^^^^^^^^^^

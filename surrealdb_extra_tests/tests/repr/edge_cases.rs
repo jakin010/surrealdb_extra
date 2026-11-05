@@ -1,7 +1,7 @@
 #![allow(clippy::enum_clike_unportable_variant, clippy::enum_variant_names)]
 
-use surrealdb::types::{Decimal, Kind, Number, SurrealValue, ToSql, Value};
 use surrealdb_extra::repr::SurrealValueRepr;
+use surrealdb_extra::types::{Decimal, Kind, Number, SurrealValue, ToSql, Value};
 
 fn int(i: i64) -> Value {
     Value::Number(Number::Int(i))

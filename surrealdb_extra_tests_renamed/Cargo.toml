@@ -1,0 +1,10 @@
+[package]
+name = "surrealdb_extra_tests_renamed"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+# Depends on surrealdb_extra under another name, and not on surrealdb,
+# to check the derives find the crate without any `crate = ...` attribute.
+[dependencies]
+extra = { package = "surrealdb_extra", path = "../surrealdb_extra", features = ["table", "repr"] }

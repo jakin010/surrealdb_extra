@@ -3,16 +3,16 @@ name = "surrealdb_extra"
 version.workspace = true
 edition.workspace = true
 license = "MIT OR Apache-2.0"
-description = "Adds a orm and query builder on top of surrealdb"
+description = "Table trait and integer enum derive for SurrealDB, built on surrealdb-types"
 readme = "crates-io.md"
 documentation = "https://docs.rs/surrealdb_extra"
 repository = "https://github.com/jakin010/surrealdb_extra"
-keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_builder"]
+keywords = ["surrealdb", "surrealdb_extra", "derive", "table", "database"]
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.13", path = "../surrealdb_extra_derive" }
-surrealdb = { workspace = true }
+surrealdb_extra_derive = { version = "0.13.1", path = "../surrealdb_extra_derive" }
+surrealdb-types = { workspace = true }
 
 [features]
 default = ["table"]

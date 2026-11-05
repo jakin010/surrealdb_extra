@@ -41,3 +41,17 @@ fn table_default_name_record_id() {
     let id = UserProfile::create_record_id("a");
     assert_eq!(id.table.as_str(), "user_profile");
 }
+
+mod renamed {
+    pub use surrealdb_extra as extra;
+}
+
+#[allow(dead_code)]
+#[derive(Table)]
+#[table(name = "custom", crate = "crate::renamed::extra")]
+struct CustomCratePath;
+
+#[test]
+fn table_custom_crate_path() {
+    assert_eq!("custom", CustomCratePath::TABLE_NAME);
+}

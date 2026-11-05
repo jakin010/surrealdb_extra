@@ -1,6 +1,6 @@
 #![allow(non_upper_case_globals, non_camel_case_types, dead_code)]
 use surrealdb_extra::repr::SurrealValueRepr;
-use surrealdb::types::{Number, SurrealValue, Value as V};
+use surrealdb_extra::types::{Number, SurrealValue, Value as V};
 // Items in scope whose names match the macro's local bindings
 const other: u8 = 200;
 const d: u8 = 201;
