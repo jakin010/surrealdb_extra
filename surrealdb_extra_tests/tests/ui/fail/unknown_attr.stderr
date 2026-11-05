@@ -1,0 +1,5 @@
+error: unknown surreal_repr variant attribute; expected `other`
+ --> tests/ui/fail/unknown_attr.rs:3:25
+  |
+3 | enum E { #[surreal_repr(rename = "x")] A }
+  |                         ^^^^^^

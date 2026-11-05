@@ -7,9 +7,8 @@ members = [
 ]
 
 [workspace.dependencies]
-surrealdb = { version = "3.0" }
+surrealdb = { version = "4.0" }
 serde = { version = "1.0.228" }
-serde_json = { version = "1.0.149" }
 
 [workspace.package]
 version = "0.12.0"

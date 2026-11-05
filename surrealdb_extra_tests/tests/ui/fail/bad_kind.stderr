@@ -1,0 +1,5 @@
+error: expected one of "literal", "int", "number"
+ --> tests/ui/fail/bad_kind.rs:3:23
+  |
+3 | #[surreal_repr(kind = "u8")]
+  |                       ^^^^

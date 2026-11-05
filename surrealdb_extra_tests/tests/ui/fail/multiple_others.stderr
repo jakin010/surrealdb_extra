@@ -1,0 +1,5 @@
+error: only one variant can be #[surreal_repr(other)]
+ --> tests/ui/fail/multiple_others.rs:3:39
+  |
+3 | enum E { A, #[surreal_repr(other)] B, #[surreal_repr(other)] C }
+  |                                       ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -15,12 +15,12 @@ proc-macro = true
 
 [features]
 table = []
-surreal_value_json = []
+repr = []
 
 [dependencies]
 quote = "1.0.42"
 surrealdb = { workspace = true }
-syn = { version = "2.0.111", features = ["derive"] }
+syn = { version = "2.0.111", features = ["derive", "full"] }
 proc-macro2 = "1.0.103"
 
 [dev-dependencies]
