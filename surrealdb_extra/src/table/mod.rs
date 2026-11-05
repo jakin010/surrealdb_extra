@@ -4,8 +4,9 @@
 //! - `#[derive(Table)]` implements the `Table` trait.
 //! - `#[table(name = "...")]` sets the table name. It is optional: without it, the name is the
 //!   struct name in snake_case (`UserProfile` becomes `user_profile`).
-//! - `#[table(crate = "...")]` sets the path to this crate, if you renamed it in `Cargo.toml`.
-//!   The default is `::surrealdb_extra`.
+//! - `#[table(crate = "...")]` sets the path to this crate. You only need it when the derive
+//!   comes through another crate's re-export: a renamed dependency in `Cargo.toml` is found
+//!   automatically.
 //!
 //! ```rust
 //! use surrealdb_extra::table::Table;

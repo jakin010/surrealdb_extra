@@ -1,3 +1,4 @@
+#[cfg(any(feature = "table", feature = "repr"))]
 mod common;
 #[cfg(feature = "repr")]
 mod repr;
@@ -7,8 +8,11 @@ mod table;
 #[cfg(feature = "table")]
 use crate::table::name::{get_crate_path, get_table_name};
 
+#[cfg(any(feature = "table", feature = "repr"))]
 use proc_macro::TokenStream;
+#[cfg(feature = "table")]
 use quote::quote;
+#[cfg(any(feature = "table", feature = "repr"))]
 use syn::{DeriveInput, parse_macro_input};
 
 #[cfg(feature = "table")]

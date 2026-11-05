@@ -13,8 +13,9 @@
 ///   `i32`, `i64` or `isize`. 128-bit reprs are not supported, because SurrealDB has no
 ///   128-bit integer type.
 /// - Every variant must be a unit variant (no fields), and the enum can't be generic.
-/// - The generated code refers to `::surrealdb_extra::types`. If you renamed `surrealdb_extra`
-///   in `Cargo.toml`, use `#[surreal_repr(crate = "...")]` to point at its `types` module.
+/// - The generated code refers to `surrealdb_extra::types`, under whatever name your `Cargo.toml`
+///   gives the dependency. If the derive comes through another crate's re-export, use
+///   `#[surreal_repr(crate = "...")]` to point at its `types` module.
 ///
 /// Discriminants can be implicit, negative, or const expressions. The compiler works them out,
 /// so they always match what `MyEnum::Variant as u8` gives.
@@ -27,7 +28,7 @@
 /// | `#[surreal_repr(kind = "literal")]` | enum | `kind_of()` is the exact values, e.g. `0 \| 1 \| 7` (default without `other`) |
 /// | `#[surreal_repr(kind = "int")]` | enum | `kind_of()` is `int` (default with `other`) |
 /// | `#[surreal_repr(kind = "number")]` | enum | `kind_of()` is `number` |
-/// | `#[surreal_repr(crate = "path")]` | enum | Path to the types module (default `::surrealdb_extra::types`) |
+/// | `#[surreal_repr(crate = "path")]` | enum | Path to the types module (default `surrealdb_extra::types`) |
 ///
 /// `other` can't be combined with `kind = "literal"`, since the schema would reject the values
 /// `other` is meant to catch.

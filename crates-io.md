@@ -84,7 +84,14 @@ struct User {
 }
 ```
 
-If you renamed `surrealdb_extra` in `Cargo.toml`, both derives take a path override: `#[table(crate = "...")]` and `#[surreal_repr(crate = "...::types")]`.
+Two quirks of SurrealDB's derive (not of this crate):
+
+- It refers to `SurrealValue` without a path, so keep `use surrealdb_extra::types::SurrealValue;` in scope.
+- For `#[surreal(untagged)]` enums whose variants use `#[surreal(value = ...)]`, it ignores `crate = ...`. Add `use surrealdb_extra::types as surrealdb_types;` in that module.
+
+## Renamed dependency
+
+The derives read your `Cargo.toml`, so renaming the dependency (`extra = { package = "surrealdb_extra" }`) just works. If you reach them through another crate's re-export instead, point them at it with `#[table(crate = "...")]` and `#[surreal_repr(crate = "...::types")]`.
 
 ## Documentation
 

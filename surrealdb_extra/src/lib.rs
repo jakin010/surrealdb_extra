@@ -22,6 +22,29 @@
 ///     name: String,
 /// }
 /// ```
+///
+/// Two quirks of SurrealDB's derive (not of this crate):
+///
+/// - It refers to `SurrealValue` without a path, so keep
+///   `use surrealdb_extra::types::SurrealValue;` in scope, even if you write
+///   `#[derive(surrealdb_extra::types::SurrealValue)]`.
+/// - For `#[surreal(untagged)]` enums whose variants use `#[surreal(value = ...)]`, it ignores
+///   `crate = ...` and always refers to `surrealdb_types`. Add an alias in that module:
+///
+/// ```rust
+/// use surrealdb_extra::types::SurrealValue;
+/// use surrealdb_extra::types as surrealdb_types;
+///
+/// #[derive(SurrealValue)]
+/// #[surreal(crate = "surrealdb_extra::types")]
+/// #[surreal(untagged)]
+/// enum Speed {
+///     #[surreal(value = "fast")]
+///     Fast,
+///     #[surreal(value = "slow")]
+///     Slow,
+/// }
+/// ```
 pub use surrealdb_types as types;
 
 #[cfg(feature = "table")]

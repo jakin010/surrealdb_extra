@@ -7,7 +7,7 @@ description = "Derive crate for surrealdb_extra"
 readme = "crates-io.md"
 documentation = "https://docs.rs/surrealdb_extra"
 repository = "https://github.com/jakin010/surrealdb_extra"
-keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_builder"]
+keywords = ["surrealdb", "surrealdb_extra", "derive", "table", "database"]
 categories = ["database", "database-implementations"]
 
 [lib]
@@ -21,6 +21,7 @@ repr = []
 quote = "1.0.47"
 syn = { version = "3.0.9", features = ["derive", "full"] }
 proc-macro2 = "1.0.107"
+proc-macro-crate = "3.5.0"
 
 [dev-dependencies]
 surrealdb_extra = { path = "../surrealdb_extra" }

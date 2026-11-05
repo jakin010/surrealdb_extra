@@ -1,23 +1,25 @@
 use crate::common::attr::get_attr_value;
+use crate::common::crate_path::surrealdb_extra_path;
 use syn::{DeriveInput, Error, Path};
 
-/// Returns `#[table(crate = "...")]` if set, otherwise `::surrealdb_extra`.
+/// Returns `#[table(crate = "...")]` if set, otherwise the path to `surrealdb_extra`
+/// as the calling crate names it.
 pub(crate) fn get_crate_path(input: &DeriveInput) -> Result<Path, Error> {
     match get_attr_value(&input.attrs, "table", "crate")? {
-        Some(path) => syn::parse_str(&path).map_err(|e| {
+        Some(lit) => lit.parse().map_err(|e| {
             Error::new(
-                e.span(),
-                format!("invalid path in #[table(crate = \"{path}\")]: {e}"),
+                lit.span(),
+                format!("invalid path in #[table(crate = \"{}\")]: {e}", lit.value()),
             )
         }),
-        None => Ok(syn::parse_quote!(::surrealdb_extra)),
+        None => Ok(surrealdb_extra_path()),
     }
 }
 
 /// Returns `#[table(name = "...")]` if set, otherwise the struct name in snake_case.
 pub(crate) fn get_table_name(input: &DeriveInput) -> Result<String, Error> {
     match get_attr_value(&input.attrs, "table", "name")? {
-        Some(name) => Ok(name),
+        Some(name) => Ok(name.value()),
         None => {
             // `r#type` becomes `type`.
             let ident = input.ident.to_string();
