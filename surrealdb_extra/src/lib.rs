@@ -29,3 +29,8 @@ pub mod table;
 
 #[cfg(feature = "repr")]
 pub mod repr;
+
+// Compile and run the README examples as doctests.
+#[cfg(all(doctest, feature = "table", feature = "repr"))]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;
