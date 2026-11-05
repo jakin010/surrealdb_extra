@@ -17,7 +17,10 @@ pub fn table(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let struct_name = &input.ident;
-    let table_name = get_table_name(&input).unwrap();
+    let table_name = match get_table_name(&input) {
+        Ok(name) => name,
+        Err(e) => return e.into_compile_error().into(),
+    };
 
     let expanded = quote! {
         impl Table for #struct_name {
