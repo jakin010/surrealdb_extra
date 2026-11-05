@@ -1,7 +1,7 @@
 // Same-named enum as the hidden struct, and user-shadowed `core`/`std`
 #![allow(dead_code)]
 use surrealdb_extra::repr::SurrealValueRepr;
-use surrealdb::types::{Number, SurrealValue, Value};
+use surrealdb_extra::types::{Number, SurrealValue, Value};
 mod core {}
 mod std {}
 #[derive(Debug, PartialEq, SurrealValueRepr)]

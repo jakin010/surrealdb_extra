@@ -8,8 +8,9 @@ members = [
 
 [workspace.dependencies]
 surrealdb = { version = "4.0" }
+surrealdb-types = { version = "4.0" }
 serde = { version = "1.0.229" }
 
 [workspace.package]
-version = "0.13.0"
+version = "0.13.1"
 edition = "2024"

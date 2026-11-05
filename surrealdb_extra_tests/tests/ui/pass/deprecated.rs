@@ -1,6 +1,6 @@
 #![deny(deprecated)]
 use surrealdb_extra::repr::SurrealValueRepr;
-use surrealdb::types::{Number, SurrealValue, Value};
+use surrealdb_extra::types::{Number, SurrealValue, Value};
 #[derive(Debug, PartialEq, SurrealValueRepr)]
 #[repr(u8)]
 enum Dep { A = 1, #[deprecated] Old = 2 }

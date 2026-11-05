@@ -3,7 +3,7 @@
 //!
 //! Enable with the `repr` feature.
 
-/// Derives `surrealdb::types::SurrealValue` for a fieldless enum with an integer `#[repr]`.
+/// Derives [`SurrealValue`](crate::types::SurrealValue) for a fieldless enum with an integer `#[repr]`.
 ///
 /// Each variant is stored as its discriminant, as a plain SurrealDB integer. No serde is involved.
 ///
@@ -13,8 +13,8 @@
 ///   `i32`, `i64` or `isize`. 128-bit reprs are not supported, because SurrealDB has no
 ///   128-bit integer type.
 /// - Every variant must be a unit variant (no fields), and the enum can't be generic.
-/// - The `surrealdb` crate must be a dependency under that name. Use
-///   `#[surreal_repr(crate = "...")]` to point at a different path.
+/// - The generated code refers to `::surrealdb_extra::types`. If you renamed `surrealdb_extra`
+///   in `Cargo.toml`, use `#[surreal_repr(crate = "...")]` to point at its `types` module.
 ///
 /// Discriminants can be implicit, negative, or const expressions. The compiler works them out,
 /// so they always match what `MyEnum::Variant as u8` gives.
@@ -27,7 +27,7 @@
 /// | `#[surreal_repr(kind = "literal")]` | enum | `kind_of()` is the exact values, e.g. `0 \| 1 \| 7` (default without `other`) |
 /// | `#[surreal_repr(kind = "int")]` | enum | `kind_of()` is `int` (default with `other`) |
 /// | `#[surreal_repr(kind = "number")]` | enum | `kind_of()` is `number` |
-/// | `#[surreal_repr(crate = "path")]` | enum | Path to `surrealdb::types` (default `::surrealdb::types`) |
+/// | `#[surreal_repr(crate = "path")]` | enum | Path to the types module (default `::surrealdb_extra::types`) |
 ///
 /// `other` can't be combined with `kind = "literal"`, since the schema would reject the values
 /// `other` is meant to catch.
@@ -44,7 +44,7 @@
 /// # Examples
 ///
 /// ```rust
-/// use surrealdb::types::{Kind, KindLiteral, Number, SurrealValue, ToSql, Value};
+/// use surrealdb_extra::types::{Kind, KindLiteral, Number, SurrealValue, ToSql, Value};
 /// use surrealdb_extra::repr::SurrealValueRepr;
 ///
 /// #[derive(Debug, PartialEq, SurrealValueRepr)]
@@ -66,7 +66,7 @@
 /// With a fallback variant:
 ///
 /// ```rust
-/// use surrealdb::types::{Kind, Number, SurrealValue, Value};
+/// use surrealdb_extra::types::{Kind, Number, SurrealValue, Value};
 /// use surrealdb_extra::repr::SurrealValueRepr;
 ///
 /// #[derive(Debug, PartialEq, SurrealValueRepr)]
@@ -84,10 +84,11 @@
 /// assert_eq!(Level::kind_of(), Kind::Int);
 /// ```
 ///
-/// It also works as a field in a type that uses SurrealDB's own derive:
+/// It also works as a field in a type that uses SurrealDB's own derive (see [`crate::types`]
+/// for why the `crate` attribute is needed):
 ///
 /// ```rust
-/// use surrealdb::types::SurrealValue;
+/// use surrealdb_extra::types::SurrealValue;
 /// use surrealdb_extra::repr::SurrealValueRepr;
 ///
 /// #[derive(SurrealValueRepr)]
@@ -95,6 +96,7 @@
 /// enum Status { Inactive, Active }
 ///
 /// #[derive(SurrealValue)]
+/// #[surreal(crate = "surrealdb_extra::types")]
 /// struct User {
 ///     name: String,
 ///     status: Status,

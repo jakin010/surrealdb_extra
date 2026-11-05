@@ -1,5 +1,18 @@
 use crate::common::attr::get_attr_value;
-use syn::{DeriveInput, Error};
+use syn::{DeriveInput, Error, Path};
+
+/// Returns `#[table(crate = "...")]` if set, otherwise `::surrealdb_extra`.
+pub(crate) fn get_crate_path(input: &DeriveInput) -> Result<Path, Error> {
+    match get_attr_value(&input.attrs, "table", "crate")? {
+        Some(path) => syn::parse_str(&path).map_err(|e| {
+            Error::new(
+                e.span(),
+                format!("invalid path in #[table(crate = \"{path}\")]: {e}"),
+            )
+        }),
+        None => Ok(syn::parse_quote!(::surrealdb_extra)),
+    }
+}
 
 /// Returns `#[table(name = "...")]` if set, otherwise the struct name in snake_case.
 pub(crate) fn get_table_name(input: &DeriveInput) -> Result<String, Error> {

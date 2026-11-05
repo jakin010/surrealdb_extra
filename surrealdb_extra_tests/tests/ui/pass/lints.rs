@@ -2,7 +2,7 @@
 #![deny(unused_qualifications, trivial_numeric_casts, unused_results, missing_docs, unreachable_patterns, unused)]
 //! lints
 use surrealdb_extra::repr::SurrealValueRepr;
-use surrealdb::types::{Number, SurrealValue, Value};
+use surrealdb_extra::types::{Number, SurrealValue, Value};
 /// e
 #[derive(Debug, PartialEq, SurrealValueRepr)]
 #[repr(i64)]

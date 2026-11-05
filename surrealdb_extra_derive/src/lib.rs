@@ -5,7 +5,7 @@ mod repr;
 mod table;
 
 #[cfg(feature = "table")]
-use crate::table::name::get_table_name;
+use crate::table::name::{get_crate_path, get_table_name};
 
 use proc_macro::TokenStream;
 use quote::quote;
@@ -17,13 +17,15 @@ pub fn table(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let struct_name = &input.ident;
-    let table_name = match get_table_name(&input) {
-        Ok(name) => name,
-        Err(e) => return e.into_compile_error().into(),
-    };
+    let (table_name, krate) =
+        match get_table_name(&input).and_then(|n| Ok((n, get_crate_path(&input)?))) {
+            Ok(v) => v,
+            Err(e) => return e.into_compile_error().into(),
+        };
 
     let expanded = quote! {
-        impl Table for #struct_name {
+        #[automatically_derived]
+        impl #krate::table::Table for #struct_name {
             const TABLE_NAME: &'static str = #table_name;
         }
     };

@@ -11,8 +11,8 @@ keywords = ["surrealdb", "surrealdb_extra", "surrealdb_orm", "orm", "query_build
 categories = ["database", "database-implementations"]
 
 [dependencies]
-surrealdb_extra_derive = { version = "0.13", path = "../surrealdb_extra_derive" }
-surrealdb = { workspace = true }
+surrealdb_extra_derive = { version = "0.13.1", path = "../surrealdb_extra_derive" }
+surrealdb-types = { workspace = true }
 
 [features]
 default = ["table"]
